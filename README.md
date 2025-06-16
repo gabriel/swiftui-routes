@@ -1,9 +1,86 @@
 # SwiftUI Routes
 
-Alternative to NavigationPath to allow for more flexibility when using and defining navigation routes.
+Alternative to NavigationPath to allow for more flexibility when using and defining navigation routes across packages with complex dependencies.
 
-- Routes based on path + params (URL) are loosely coupled, good for deep linking and complex package dependencies.
-- Routes based on types are strongly coupled, good for preventing invalid routes.
+Routes are based on either URLs (loosely coupled) or Types (strongly coupled).
+
+## URL
+
+URL registered routes are loosely coupled, good for deep linking and complex package dependencies.
+
+```swift
+// In your package
+routes.register(path: "/my/route", myRoute)
+
+// Define view for route
+@ViewBuilder
+func myRoute(_ url: RouteURL) -> some View {
+}
+
+// Use the route
+routes.push("/package-a/value", params: ["text": "Hello!"])
+```
+
+## Types
+
+Type registered routes are strongly coupled, compiled, good for ensuring correct behavior.
+
+```swift
+// In your package
+routes.register(type: Value.self, myRoute)
+
+// Define view for route
+@ViewBuilder
+func myRoute(_ value: Value) -> some View {
+}
+
+// Use the route
+routes.push(PackageA.Value(text: "Hello World!"))
+```
+
+Routes is an Observable accessible from the Environment (view hierarchy).
+
+```swift
+struct MyApp: View {
+    @State var routes: Routes
+
+    init() {
+        let routes = Routes()
+        
+        // Register your routes
+        routes.register(path: "/my/route", myRoute)
+
+        _routes = State(initialValue: routes)
+    }
+
+    var body: some View {
+        MyView()
+            .environment(routes)
+    }
+
+    func myRoute(_ url: RouteURL) -> some View {
+        MyRoute()
+    }
+}
+
+struct MyView: View {
+    @Environment(Routes.self) var routes
+
+    var body: some View {
+        Button {
+            routes.push("/my/route")
+        }
+    }
+}
+
+struct MyRoute: View {
+    @Environment(Routes.self) var routes
+
+    var body: some View {
+        Text("My route")
+    }
+}
+```
 
 ## Requirements
 
@@ -18,7 +95,7 @@ Add the following to your `Package.swift` file:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/gabriel/swiftui-routes", from: "0.1.1")
+    .package(url: "https://github.com/gabriel/swiftui-routes", from: "0.1.3")
 ]
 
 .testTarget(
