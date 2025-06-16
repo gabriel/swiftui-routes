@@ -163,18 +163,40 @@ public struct ExampleView: View {
 import SwiftUI
 import SwiftUIRoutes
 
+@MainActor
 public func register(routes: Routes) {
-    routes.register(type: Value.self, someView)
-    routes.register(path: "/package-a/value", someView)
+    routes.register(type: Value.self) { value in
+        MyView(value: value)
+    }
+    routes.register(path: "/package-b/value") { url in
+        MyView(value: Value(systemImage: url.params["systemName"] ?? "heart.fill"))
+    }
 }
 
-@ViewBuilder
-func someView(_ value: Value) -> some View {
-    // View for value
+struct MyView: View {
+    @Environment(Routes.self) var routes
+
+    let value: Value
+
+    var body: some View {
+        VStack {
+            Button("Back") {
+                routes.pop()
+            }
+            .buttonStyle(.bordered)
+
+            Button("Back") {
+                routes.push("/package-a/value")
+            }
+            .buttonStyle(.bordered)
+
+            value.image
+                .resizable()
+                .scaledToFit()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .navigationTitle("Package B")
+    }
 }
 
-@ViewBuilder
-func someView(_ url: RouteURL) -> some View {
-    // View for url
-}
 ```
