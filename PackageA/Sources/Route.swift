@@ -1,6 +1,13 @@
 import SwiftUI
+import SwiftUIRoutes
 
-public struct PackageAText: Hashable, Sendable {
+@MainActor
+public func register(routes: Routes) {
+    routes.register(type: Value.self, view)
+    routes.register(path: "/package-a/value", view)
+}
+
+public struct Value: Hashable, Sendable {
     let id: UUID
     let text: String
 
@@ -10,25 +17,15 @@ public struct PackageAText: Hashable, Sendable {
     }
 }
 
-public struct PackageAImage: Hashable, Sendable {
-    public init(image: Image) {
-        id = UUID()
-        self.image = image
+@ViewBuilder
+func view(_ value: Value) -> some View {
+    VStack {
+        Text(value.text)
     }
+    .navigationTitle("PackageA")
+}
 
-    public init(systemImage: String) {
-        id = UUID()
-        image = Image(systemName: systemImage)
-    }
-
-    let id: UUID
-    let image: Image
-
-    public static func == (lhs: PackageAImage, rhs: PackageAImage) -> Bool {
-        lhs.id == rhs.id
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-    }
+@ViewBuilder
+func view(_ url: RouteURL) -> some View {
+    view(Value(text: url.params["text"] ?? ""))
 }

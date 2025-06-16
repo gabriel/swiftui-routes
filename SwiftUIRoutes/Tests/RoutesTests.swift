@@ -4,22 +4,37 @@ import SwiftUI
 import SwiftUISnapshotTesting
 import Testing
 
-struct TestRoute: Hashable {
-    let value: String
+struct SomeValue: Hashable {
+    let text: String
 }
 
 @Test @MainActor
-func testRegistry() throws {
-    let registry = RouteRegistry()
-    registry.register(type: TestRoute.self) { route in
-        Text(route.value)
+func testRouteValue() throws {
+    let routes = Routes()
+    routes.register(type: SomeValue.self) { value in
+        Text(value.text)
             .font(.largeTitle)
             .foregroundColor(.blue)
             .background(.red)
     }
 
-    let route = TestRoute(value: "Test Registry")
-    let view = registry.view(route: Route.byType(route))
+    let value = SomeValue(text: "Test Routes")
+    let view = routes.view(value)
+
+    assertRender(view: view, device: .any)
+}
+
+@Test @MainActor
+func testRouteURL() throws {
+    let routes = Routes()
+    routes.register(path: "/route-a") { _ in
+        Text("Route A")
+            .font(.largeTitle)
+            .foregroundColor(.blue)
+            .background(.red)
+    }
+
+    let view = routes.view(path: "/route-a")
 
     assertRender(view: view, device: .any)
 }

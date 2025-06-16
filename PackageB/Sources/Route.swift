@@ -1,14 +1,29 @@
 import SwiftUI
+import SwiftUIRoutes
 
-public struct PackageBText: Hashable {
-    let text: String
-
-    public init(text: String) {
-        self.text = text
-    }
+@MainActor
+public func register(routes: Routes) {
+    routes.register(type: Value.self, view)
+    routes.register(path: "/package-b/value", view)
 }
 
-public struct PackageBImage: Hashable {
+@ViewBuilder
+func view(_ value: Value) -> some View {
+    VStack {
+        value.image
+            .resizable()
+            .scaledToFit()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+    .navigationTitle("PackageB")
+}
+
+@ViewBuilder
+func view(_ url: RouteURL) -> some View {
+    view(Value(image: Image(systemName: url.params["systemName"] ?? "")))
+}
+
+public struct Value: Hashable {
     public init(image: Image) {
         id = UUID()
         self.image = image
@@ -22,7 +37,7 @@ public struct PackageBImage: Hashable {
     let id: UUID
     let image: Image
 
-    public static func == (lhs: PackageBImage, rhs: PackageBImage) -> Bool {
+    public static func == (lhs: Value, rhs: Value) -> Bool {
         lhs.id == rhs.id
     }
 

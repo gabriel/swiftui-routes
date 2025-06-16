@@ -2,6 +2,9 @@
 
 Alternative to NavigationPath to allow for more flexibility when using and defining navigation routes.
 
+- Routes based on path + params (URL) are loosely coupled, good for deep linking and complex package dependencies.
+- Routes based on types are strongly coupled, good for preventing invalid routes.
+
 ## Requirements
 
 - iOS 17.0+ / macOS 15.0+
@@ -27,52 +30,51 @@ dependencies: [
 
 ## Example
 
-Here we register routes from packages.
+Here we register routes from package A and package B:
 
 ```swift
 import PackageA
 import PackageB
-import PackageC
-import SwiftUIRoutes
 import SwiftUI
+import SwiftUIRoutes
 
 public struct ExampleView: View {
-    public init(routePath: Binding<RoutePath>) {
-        _routePath = routePath
-        PackageA.register(registry: registry)
-        PackageB.register(registry: registry)
-        PackageC.register(registry: registry)
+    @StateObject private var routes: Routes
+
+    public init() {
+        let routes = Routes()
+        PackageA.register(routes: routes)
+        PackageB.register(routes: routes)
+        _routes = StateObject(wrappedValue: routes)
     }
 
-    @Binding var routePath: RoutePath
-
-    private var registry = RouteRegistry()
-
     public var body: some View {
-        NavigationStack(path: $routePath) {
+        NavigationStack(path: $routes.path) {
             List {
-                Button("PackageA") {
-                    routePath.append(Route.byType(PackageAValue(text: "Hello World!")))
-                }
-                
-                Button("PackageB") {
-                    routePath.append(Route.byType(PackageBValue(systemImage: "heart.fill")))
+                Button("Package A (Type)") {
+                    routes.push(PackageA.Value(text: "Hello World!"))
                 }
 
-                Button("PackageC") {
-                    routePath.append(Route.url(path: "/package-c/image", params: ["systemName": "heart.fill"]))
-                }                
+                Button("Package A (URL)") {
+                    routes.push("/package-a/value", params: ["text": "Hello!"])
+                }
+
+                Button("Package B (Type)") {
+                    routes.push(PackageB.Value(systemImage: "heart.fill"))
+                }
+
+                Button("Package B (URL)") {
+                    routes.push("/package-b/value", params: ["systemName": "heart"])
+                }
             }
             .navigationTitle("Example")
-            .routesDestination(registry: registry)
+            .routesDestination(routes)
         }
     }
 }
 
 #Preview {
-    @Previewable @State var routePath: RoutePath = []
-
-    ExampleView(routePath: $routePath)
+    ExampleView()
 }
 ```
 
@@ -82,18 +84,18 @@ public struct ExampleView: View {
 import SwiftUI
 import SwiftUIRoutes
 
-public func register(registry: RouteRegistry) {
-    registry.register(type: PackageAValue.self, someView)
-    registry.register(path: "/package-a/image", imageView)
+public func register(routes: Routes) {
+    routes.register(type: Value.self, someView)
+    routes.register(path: "/package-a/value", someView)
 }
 
 @ViewBuilder
-func someView(_ value: PackageAValue) -> some View {
+func someView(_ value: Value) -> some View {
     // View for value
 }
 
 @ViewBuilder
-func imageView(params: RouteParams) -> some View {
-    // View for url params
+func someView(_ url: RouteURL) -> some View {
+    // View for url
 }
 ```

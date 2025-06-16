@@ -1,59 +1,43 @@
 import PackageA
 import PackageB
-import PackageC
 import SwiftUI
 import SwiftUIRoutes
 
 public struct ExampleView: View {
-    public init(routePath: Binding<RoutePath>) {
-        _routePath = routePath
-        PackageA.register(registry: registry)
-        PackageB.register(registry: registry)
-        PackageC.register(registry: registry)
+    @StateObject private var routes: Routes
+
+    public init() {
+        let routes = Routes()
+        PackageA.register(routes: routes)
+        PackageB.register(routes: routes)
+        _routes = StateObject(wrappedValue: routes)
     }
 
-    @Binding var routePath: RoutePath
-
-    private var registry = RouteRegistry()
-
     public var body: some View {
-        NavigationStack(path: $routePath) {
+        NavigationStack(path: $routes.path) {
             List {
-                Section("Package A") {
-                    Button("Text") {
-                        routePath.append(Route.byType(PackageAText(text: "Hello World!")))
-                    }
-                    Button("Image") {
-                        routePath.append(Route.byType(PackageAImage(image: Image(systemName: "heart.fill"))))
-                    }
+                Button("Package A (Type)") {
+                    routes.push(PackageA.Value(text: "Hello World!"))
                 }
 
-                Section("Package B") {
-                    Button("Text") {
-                        routePath.append(Route.byType(PackageBText(text: "Hi!")))
-                    }
-                    Button("Image") {
-                        routePath.append(Route.byType(PackageBImage(image: Image(systemName: "heart"))))
-                    }
+                Button("Package A (URL)") {
+                    routes.push("/package-a/value", params: ["text": "Hello!"])
                 }
 
-                Section("Package C") {
-                    Button("Text") {
-                        routePath.append(Route.url(path: "/package-c/text", params: ["text": "Howdy!"]))
-                    }
-                    Button("Image") {
-                        routePath.append(Route.url(path: "/package-c/image", params: ["systemName": "heart.circle"]))
-                    }
+                Button("Package B (Type)") {
+                    routes.push(PackageB.Value(systemImage: "heart.fill"))
+                }
+
+                Button("Package B (URL)") {
+                    routes.push("/package-b/value", params: ["systemName": "heart"])
                 }
             }
             .navigationTitle("Example")
-            .routesDestination(registry: registry)
+            .routesDestination(routes)
         }
     }
 }
 
 #Preview {
-    @Previewable @State var routePath: RoutePath = []
-
-    ExampleView(routePath: $routePath)
+    ExampleView()
 }

@@ -18,8 +18,7 @@ let package = Package(
     dependencies: [
         .package(path: "../SwiftUIRoutes"),
         .package(path: "../PackageA"),
-        .package(path: "../PackageB"),
-        .package(path: "../PackageC")
+        .package(path: "../PackageB")
     ],
     targets: [
         .target(
@@ -27,8 +26,7 @@ let package = Package(
             dependencies: [
                 .product(name: "SwiftUIRoutes", package: "SwiftUIRoutes"),
                 .product(name: "PackageA", package: "PackageA"),
-                .product(name: "PackageB", package: "PackageB"),
-                .product(name: "PackageC", package: "PackageC")
+                .product(name: "PackageB", package: "PackageB")
             ]
         )
     ]
