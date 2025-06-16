@@ -1,15 +1,14 @@
-import Combine
 import SwiftUI
 
-@MainActor
-public class Routes: ObservableObject {
-    @Published public var path: RoutePath = []
+@MainActor @Observable
+public class Routes {
+    public var path: RoutePath = []
 
-    @Published var objects: [ObjectIdentifier: (Any) -> AnyView] = [:]
-    @Published var paths: [String: (RouteURL) -> AnyView] = [:]
+    var objects: [ObjectIdentifier: (Any) -> AnyView] = [:]
+    var paths: [String: (RouteURL) -> AnyView] = [:]
 
     public init(initialPath: RoutePath = []) {
-        _path = Published(initialValue: initialPath)
+        path = initialPath
     }
 
     public func register<T>(type: T.Type, _ build: @escaping (T) -> some View) {

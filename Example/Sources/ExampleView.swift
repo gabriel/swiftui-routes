@@ -4,13 +4,13 @@ import SwiftUI
 import SwiftUIRoutes
 
 public struct ExampleView: View {
-    @StateObject private var routes: Routes
+    @State private var routes: Routes
 
     public init() {
         let routes = Routes()
         PackageA.register(routes: routes)
         PackageB.register(routes: routes)
-        _routes = StateObject(wrappedValue: routes)
+        _routes = State(initialValue: routes)
     }
 
     public var body: some View {
@@ -35,6 +35,7 @@ public struct ExampleView: View {
             .navigationTitle("Example")
             .routesDestination(routes)
         }
+        .environment(routes)
     }
 }
 

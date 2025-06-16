@@ -3,24 +3,33 @@ import SwiftUIRoutes
 
 @MainActor
 public func register(routes: Routes) {
-    routes.register(type: Value.self, view)
-    routes.register(path: "/package-b/value", view)
-}
-
-@ViewBuilder
-func view(_ value: Value) -> some View {
-    VStack {
-        value.image
-            .resizable()
-            .scaledToFit()
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+    routes.register(type: Value.self) { value in
+        MyView(value: value)
     }
-    .navigationTitle("PackageB")
+    routes.register(path: "/package-b/value") { url in
+        MyView(value: Value(systemImage: url.params["systemName"] ?? "heart.fill"))
+    }
 }
 
-@ViewBuilder
-func view(_ url: RouteURL) -> some View {
-    view(Value(image: Image(systemName: url.params["systemName"] ?? "")))
+struct MyView: View {
+    @Environment(Routes.self) var routes
+
+    let value: Value
+
+    var body: some View {
+        VStack {
+            Button("Back") {
+                routes.pop()
+            }
+            .buttonStyle(.bordered)
+
+            value.image
+                .resizable()
+                .scaledToFit()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .navigationTitle("Package B")
+    }
 }
 
 public struct Value: Hashable {
