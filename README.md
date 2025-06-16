@@ -27,11 +27,13 @@ dependencies: [
 
 ## Example
 
-```swift
+Here we register routes from packages.
 
+```swift
 import PackageA
 import PackageB
-import Routes
+import PackageC
+import SwiftUIRoutes
 import SwiftUI
 
 public struct ExampleView: View {
@@ -39,6 +41,7 @@ public struct ExampleView: View {
         _routePath = routePath
         PackageA.register(registry: registry)
         PackageB.register(registry: registry)
+        PackageC.register(registry: registry)
     }
 
     @Binding var routePath: RoutePath
@@ -48,24 +51,20 @@ public struct ExampleView: View {
     public var body: some View {
         NavigationStack(path: $routePath) {
             List {
-                Button("PackageA Text") {
-                    routePath.append(Route(PackageAText(text: "Hello World!")))
+                Button("PackageA") {
+                    routePath.append(Route.byType(PackageAValue(text: "Hello World!")))
                 }
-                Button("PackageA Image") {
-                    routePath.append(Route(PackageAImage(image: Image(systemName: "heart.fill"))))
+                
+                Button("PackageB") {
+                    routePath.append(Route.byType(PackageBValue(systemImage: "heart.fill")))
                 }
 
-                Button("PackageB Text") {
-                    routePath.append(Route(PackageBText(text: "Hello World!")))
-                }
-                Button("PackageB Image") {
-                    routePath.append(Route(PackageBImage(image: Image(systemName: "heart.fill"))))
-                }
+                Button("PackageC") {
+                    routePath.append(Route.url(path: "/package-c/image", params: ["systemName": "heart.fill"]))
+                }                
             }
             .navigationTitle("Example")
-            .navigationDestination(for: Route.self) { route in
-                registry.view(for: route)
-            }
+            .routesDestination(registry: registry)
         }
     }
 }
@@ -74,5 +73,27 @@ public struct ExampleView: View {
     @Previewable @State var routePath: RoutePath = []
 
     ExampleView(routePath: $routePath)
+}
+```
+
+### Register
+
+```swift
+import SwiftUI
+import SwiftUIRoutes
+
+public func register(registry: RouteRegistry) {
+    registry.register(type: PackageAValue.self, someView)
+    registry.register(prefix: "/package-a/image", imageView)
+}
+
+@ViewBuilder
+func someView(_ value: PackageAValue) -> some View {
+    // View for value
+}
+
+@ViewBuilder
+func imageView(params: RouteParams) -> some View {
+    imageView(systemName: params["systemName"] ?? "")
 }
 ```

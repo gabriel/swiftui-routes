@@ -4,33 +4,34 @@
 import PackageDescription
 
 let package = Package(
-  name: "SwiftUIRoutes",
-  platforms: [
-    .iOS(.v17),
-    .macOS(.v15),
-  ],
-  products: [
-    .library(
-      name: "SwiftUIRoutes",
-      targets: ["SwiftUIRoutes"]
-    ),
-  ],
-  dependencies: [
-    .package(url: "https://github.com/gabriel/swiftui-snapshot-testing", from: "0.1.8"),
-  ],
-  targets: [
-    .target(
-      name: "SwiftUIRoutes",
-      dependencies: [],
-      path: "SwiftUIRoutes/Sources"
-    ),
-    .testTarget(
-      name: "SwiftUIRoutesTests",
-      dependencies: [
-        "SwiftUIRoutes",
-        .product(name: "SwiftUISnapshotTesting", package: "swiftui-snapshot-testing"),
-      ],
-      path: "SwiftUIRoutes/Tests"
-    ),
-  ]
+    name: "SwiftUIRoutes",
+    platforms: [
+        .iOS(.v17),
+        .macOS(.v15)
+    ],
+    products: [
+        .library(
+            name: "SwiftUIRoutes",
+            targets: ["SwiftUIRoutes"]
+        )
+    ],
+    dependencies: [
+        .package(url: "https://github.com/gabriel/swiftui-snapshot-testing", from: "0.1.8")
+    ],
+    targets: [
+        .target(
+            name: "SwiftUIRoutes",
+            dependencies: [],
+            path: "SwiftUIRoutes/Sources"
+        ),
+        .testTarget(
+            name: "SwiftUIRoutesTests",
+            dependencies: [
+                "SwiftUIRoutes",
+                .product(name: "SwiftUISnapshotTesting", package: "swiftui-snapshot-testing")
+            ],
+            path: "SwiftUIRoutes/Tests",
+            exclude: ["__Snapshots__"]
+        )
+    ]
 )

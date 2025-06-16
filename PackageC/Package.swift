@@ -4,15 +4,15 @@
 import PackageDescription
 
 let package = Package(
-    name: "PackageB",
+    name: "PackageC",
     platforms: [
         .iOS(.v17),
         .macOS(.v15)
     ],
     products: [
         .library(
-            name: "PackageB",
-            targets: ["PackageB"]
+            name: "PackageC",
+            targets: ["PackageC"]
         )
     ],
     dependencies: [
@@ -20,7 +20,7 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "PackageB",
+            name: "PackageC",
             dependencies: [
                 .product(name: "SwiftUIRoutes", package: "SwiftUIRoutes")
             ]

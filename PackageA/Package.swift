@@ -7,23 +7,23 @@ let package = Package(
     name: "PackageA",
     platforms: [
         .iOS(.v17),
-        .macOS(.v15),
+        .macOS(.v15)
     ],
     products: [
         .library(
             name: "PackageA",
             targets: ["PackageA"]
-        ),
+        )
     ],
     dependencies: [
-        .package(path: "../SwiftUIRoutes"),
+        .package(path: "../SwiftUIRoutes")
     ],
     targets: [
         .target(
             name: "PackageA",
             dependencies: [
-                .product(name: "SwiftUIRoutes", package: "SwiftUIRoutes"),
+                .product(name: "SwiftUIRoutes", package: "SwiftUIRoutes")
             ]
-        ),
+        )
     ]
 )

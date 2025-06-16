@@ -1,0 +1,6 @@
+--indent 4
+--linebreaks lf
+--commas inline
+--semicolons never
+--stripunusedargs closure-only
+--self remove

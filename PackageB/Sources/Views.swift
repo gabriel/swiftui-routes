@@ -5,7 +5,7 @@ func textView(_ text: PackageBText) -> some View {
     VStack {
         Text(text.text)
     }
-    .navigationTitle("PackageB Text")
+    .navigationTitle("PackageB")
 }
 
 @ViewBuilder
@@ -16,5 +16,5 @@ func imageView(_ image: PackageBImage) -> some View {
             .scaledToFit()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-    .navigationTitle("PackageB Image")
+    .navigationTitle("PackageB")
 }

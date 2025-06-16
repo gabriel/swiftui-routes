@@ -7,13 +7,13 @@ let package = Package(
     name: "SwiftUIRoutes",
     platforms: [
         .iOS(.v17),
-        .macOS(.v15),
+        .macOS(.v15)
     ],
     products: [
         .library(
             name: "SwiftUIRoutes",
             targets: ["SwiftUIRoutes"]
-        ),
+        )
     ],
     dependencies: [],
     targets: [
@@ -21,6 +21,6 @@ let package = Package(
             name: "SwiftUIRoutes",
             dependencies: [],
             path: "Sources"
-        ),
+        )
     ]
 )
