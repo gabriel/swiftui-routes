@@ -86,5 +86,6 @@ public extension View {
         navigationDestination(for: Route.self) { route in
             routes.view(route: route)
         }
+        .environment(routes)
     }
 }

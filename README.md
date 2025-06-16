@@ -58,7 +58,7 @@ struct MyApp: View {
     var body: some View {
         NavigationStack(path: $routes.path) {}
             MyView()                
-                .environment(routes)
+                .routesDestination(routes)
         }
     }
 
