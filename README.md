@@ -54,8 +54,10 @@ struct MyApp: View {
     }
 
     var body: some View {
-        MyView()
-            .environment(routes)
+        NavigationStack(path: $routes.path) {}
+            MyView()                
+        }
+        .environment(routes)
     }
 
     func myRoute(_ url: RouteURL) -> some View {
