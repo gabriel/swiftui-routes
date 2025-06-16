@@ -107,7 +107,7 @@ dependencies: [
 )
 ```
 
-## Example
+## Example (Multiple Packages)
 
 Here we register routes from package A and package B:
 
