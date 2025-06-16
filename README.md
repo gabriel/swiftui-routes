@@ -76,7 +76,7 @@ public struct ExampleView: View {
 }
 ```
 
-### Register
+### Register (in Package)
 
 ```swift
 import SwiftUI
@@ -84,7 +84,7 @@ import SwiftUIRoutes
 
 public func register(registry: RouteRegistry) {
     registry.register(type: PackageAValue.self, someView)
-    registry.register(prefix: "/package-a/image", imageView)
+    registry.register(path: "/package-a/image", imageView)
 }
 
 @ViewBuilder
@@ -94,6 +94,6 @@ func someView(_ value: PackageAValue) -> some View {
 
 @ViewBuilder
 func imageView(params: RouteParams) -> some View {
-    imageView(systemName: params["systemName"] ?? "")
+    // View for url params
 }
 ```
