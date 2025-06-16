@@ -15,13 +15,13 @@ public class Routes {
         let id = ObjectIdentifier(type)
         objects[id] = { any in
             guard let t = any as? T else { return AnyView(Text("SwiftUIRoutes: Type mismatch")) }
-            return AnyView(build(t))
+            return AnyView(build(t).environment(self))
         }
     }
 
     public func register(path: String, _ build: @escaping (RouteURL) -> some View) {
         paths[path] = { url in
-            AnyView(build(url))
+            AnyView(build(url).environment(self))
         }
     }
 

@@ -38,7 +38,9 @@ func myRoute(_ value: Value) -> some View {
 routes.push(Value(text: "Hello World!"))
 ```
 
-Routes is an Observable accessible from the Environment (view hierarchy).
+## Observable
+
+Routes is an Observable accessible from the Environment (view hierarchy) for any registered views.
 
 ```swift
 struct MyApp: View {
@@ -56,8 +58,8 @@ struct MyApp: View {
     var body: some View {
         NavigationStack(path: $routes.path) {}
             MyView()                
+                .environment(routes)
         }
-        .environment(routes)
     }
 
     func myRoute(_ url: RouteURL) -> some View {
@@ -76,10 +78,14 @@ struct MyView: View {
 }
 
 struct MyRoute: View {
+    // As a registered route, Routes is accessbile via the Environment
     @Environment(Routes.self) var routes
 
     var body: some View {
         Text("My route")
+        Button {
+            routes.pop()
+        }
     }
 }
 ```
@@ -149,7 +155,6 @@ public struct ExampleView: View {
             .navigationTitle("Example")
             .routesDestination(routes)
         }
-        .environment(routes)
     }
 }
 

@@ -15,7 +15,6 @@ public struct RouteStack<Content: View>: View {
             content
                 .routesDestination(routes)
         }
-        .environment(routes)
     }
 }
 

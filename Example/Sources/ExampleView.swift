@@ -35,7 +35,6 @@ public struct ExampleView: View {
             .navigationTitle("Example")
             .routesDestination(routes)
         }
-        .environment(routes)
     }
 }
 
