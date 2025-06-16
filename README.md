@@ -18,7 +18,7 @@ func myRoute(_ url: RouteURL) -> some View {
 }
 
 // Use the route
-routes.push("/package-a/value", params: ["text": "Hello!"])
+routes.push("/my/route", params: ["text": "Hello!"])
 ```
 
 ## Types
@@ -35,7 +35,7 @@ func myRoute(_ value: Value) -> some View {
 }
 
 // Use the route
-routes.push(PackageA.Value(text: "Hello World!"))
+routes.push(Value(text: "Hello World!"))
 ```
 
 Routes is an Observable accessible from the Environment (view hierarchy).
