@@ -15,12 +15,23 @@ let package = Package(
             targets: ["SwiftUIRoutes"]
         )
     ],
-    dependencies: [],
+    dependencies: [
+        .package(url: "https://github.com/gabriel/swiftui-snapshot-testing", from: "0.1.10")
+    ],
     targets: [
         .target(
             name: "SwiftUIRoutes",
             dependencies: [],
-            path: "SwiftUIRoutes/Sources"
+            path: "Sources"
+        ),
+        .testTarget(
+            name: "SwiftUIRoutesTests",
+            dependencies: [
+                "SwiftUIRoutes",
+                .product(name: "SwiftUISnapshotTesting", package: "swiftui-snapshot-testing")
+            ],
+            path: "Tests",
+            exclude: ["__Snapshots__"]
         )
     ]
 )
