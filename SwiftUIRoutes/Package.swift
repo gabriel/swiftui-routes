@@ -16,7 +16,7 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/gabriel/swiftui-snapshot-testing", from: "0.1.8")
+        .package(url: "https://github.com/gabriel/swiftui-snapshot-testing", from: "0.1.10")
     ],
     targets: [
         .target(

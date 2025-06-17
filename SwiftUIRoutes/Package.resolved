@@ -1,5 +1,5 @@
 {
-  "originHash" : "f8dad8d201e63c96757bdd270cd8e9d83cedf9ef0dd1ede719cc7e5331107e54",
+  "originHash" : "b5392321a5f5074c209d0266137b527f5901c81fb06aa1e4300f1f3da2200392",
   "pins" : [
     {
       "identity" : "swift-custom-dump",
@@ -33,8 +33,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/gabriel/swiftui-snapshot-testing",
       "state" : {
-        "revision" : "bb6318ee6b3a7d27db6fbc9e2adfd85089022289",
-        "version" : "0.1.8"
+        "revision" : "6d6c442121ad106b8c210e220784e28fb161e71b",
+        "version" : "0.1.10"
       }
     },
     {
