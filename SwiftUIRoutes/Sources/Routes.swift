@@ -7,6 +7,13 @@ public class Routes {
     var objects: [ObjectIdentifier: (Any) -> AnyView] = [:]
     var paths: [String: (RouteURL) -> AnyView] = [:]
 
+    public var pathBinding: Binding<RoutePath> {
+        Binding(
+            get: { self.path },
+            set: { self.path = $0 }
+        )
+    }
+
     public init(initialPath: RoutePath = []) {
         path = initialPath
     }
