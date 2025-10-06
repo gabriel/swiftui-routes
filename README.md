@@ -122,7 +122,7 @@ dependencies: [
 
 ## Example (Multiple Packages)
 
-Here we register routes from package A and package B:
+Here we register routes from package A and package B. We use url based routing for loose coupling.
 
 ```swift
 import PackageA
