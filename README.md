@@ -9,6 +9,8 @@ Routes are based on either URLs (loosely coupled) or Types (strongly coupled).
 URL registered routes are loosely coupled, good for deep linking and complex package dependencies.
 
 ```swift
+import SwiftUIRoutes
+
 // In your package
 routes.register(path: "/my/route", myRoute)
 
@@ -26,6 +28,8 @@ routes.push("/my/route", params: ["text": "Hello!"])
 Type registered routes are strongly coupled, compiled, good for ensuring correct behavior.
 
 ```swift
+import SwiftUIRoutes
+
 // In your package
 routes.register(type: Value.self, myRoute)
 
@@ -43,6 +47,9 @@ routes.push(Value(text: "Hello World!"))
 Routes is an Observable accessible from the Environment (view hierarchy) for any registered views.
 
 ```swift
+import SwiftUI
+import SwiftUIRoutes
+
 struct MyApp: View {
     @State var routes: Routes
 
