@@ -106,7 +106,7 @@ dependencies: [
     .package(url: "https://github.com/gabriel/swiftui-routes", from: "0.1.3")
 ]
 
-.testTarget(
+.target(
     dependencies: [
         .product(name: "SwiftUIRoutes", package: "swiftui-routes"),
     ]
