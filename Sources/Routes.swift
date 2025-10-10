@@ -2,20 +2,20 @@ import SwiftUI
 
 @MainActor @Observable
 public class Routes {
-    private var path: RoutePath = []
+    private var _path: RoutePath = []
 
     private var objects: [ObjectIdentifier: (Any) -> AnyView] = [:]
     private var exactPaths: [String: (RouteURL) -> AnyView] = [:]
     private var parameterizedPaths: [ParameterizedPath] = []
-    public var pathBinding: Binding<RoutePath> {
+    public var path: Binding<RoutePath> {
         Binding(
-            get: { self.path },
-            set: { self.path = $0 }
+            get: { self._path },
+            set: { self._path = $0 }
         )
     }
 
     public init(initialPath: RoutePath = []) {
-        path = initialPath
+        _path = initialPath
     }
 
     public func register<T>(type: T.Type, _ build: @escaping (T) -> some View) {
@@ -47,7 +47,7 @@ public class Routes {
     }
 
     public func push(path: String, params: [String: String] = [:]) {
-        append(Route.url(path: path, params: params))
+        _path.append(Route.url(path: path, params: params))
     }
 
     public func push(_ path: String) {
@@ -55,16 +55,12 @@ public class Routes {
     }
 
     public func push<T: Any>(value: T) {
-        append(Route.value(ObjectIdentifier(T.self), value))
+        _path.append(Route.value(ObjectIdentifier(T.self), value))
     }
 
     public func pop() {
         guard !path.isEmpty else { return }
-        path.removeLast()
-    }
-
-    private func append(_ route: Route) {
-        path.append(route)
+        _path.removeLast()
     }
 
     @ViewBuilder

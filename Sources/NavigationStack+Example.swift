@@ -26,7 +26,7 @@ struct NavigationStackExample: View {
     }
 
     var body: some View {
-        NavigationStack(path: routes.pathBinding) {
+        NavigationStack(path: routes.path) {
             VStack {
                 Text("Routes Example")
                     .font(.title)

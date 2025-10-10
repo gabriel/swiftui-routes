@@ -11,14 +11,14 @@ URL registered routes are loosely coupled, good for deep linking and complex pac
 ```swift
 import SwiftUIRoutes
 
-func createRoutes() -> Routes {
-    let routes = Routes()
+@State var routes = Routes()
+
+func register(routes: Routes) {
     routes.register(path: "/album/:id") { url in
         if let id = url.param("id") {
             AlbumView(id: id)
         }
     }
-    return routes
 }
 
 // Use the route
@@ -32,12 +32,12 @@ Type registered routes are strongly coupled, compiled, good for ensuring correct
 ```swift
 import SwiftUIRoutes
 
-func createRoutes() -> Routes {
-    let routes = Routes()
+@State var routes = Routes()
+
+func register(routes: Routes) {
     routes.register(type: Value.self) { value in 
         ValueView(value)
     }
-    return routes
 }
 
 // Use the route
@@ -53,21 +53,17 @@ import SwiftUI
 import SwiftUIRoutes
 
 struct MyApp: View {
-    @State var routes: Routes
+    @State var routes = Routes()
 
     init() {
-        let routes = Routes()
-        
         // Register your routes
         routes.register(path: "/my/route") {
             MyRouteView()
         }
-
-        _routes = State(initialValue: routes)
     }
 
     var body: some View {
-        NavigationStack(path: $routes.path) {
+        NavigationStack(path: routes.path) {
             MyAppView()                
                 .routesDestination(routes)
         }
@@ -131,17 +127,15 @@ import SwiftUI
 import SwiftUIRoutes
 
 public struct ExampleView: View {
-    @State private var routes: Routes
+    @State private var routes = Routes()
 
     public init() {
-        let routes = Routes()
         PackageA.register(routes: routes)
         PackageB.register(routes: routes)
-        _routes = State(initialValue: routes)
     }
 
     public var body: some View {
-        NavigationStack(path: $routes.path) {
+        NavigationStack(path: routes.path) {
             List {
                 Button("Package A (Type)") {
                     routes.push(value: PackageA.Value(text: "Hello World!"))
