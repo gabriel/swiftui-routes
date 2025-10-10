@@ -49,7 +49,7 @@ func testRouteStack() throws {
             .background(.red)
     }
 
-    let view = NavigationStack(path: routes.pathBinding) {
+    let view = NavigationStack(path: routes.path) {
         VStack {
             Text("Testing")
                 .foregroundColor(.blue)
