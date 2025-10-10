@@ -16,7 +16,7 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(path: "../SwiftUIRoutes")
+        .package(name: "SwiftUIRoutes", path: "../..")
     ],
     targets: [
         .target(

@@ -1,14 +1,15 @@
 import SwiftUI
 
+struct RouteA { }
+
+struct RouteB {
+    let params: [String: String]
+}
+
 struct NavigationStackExample: View {
-    let routes = Routes()
+    @State private var routes = Routes()
 
-    struct RouteA { }
-
-    struct RouteB {
-        let params: [String: String]
-    }
-
+    
     init() {
         routes.register(path: "/route/a") { _ in
             AView()

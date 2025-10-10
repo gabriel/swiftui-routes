@@ -4,32 +4,30 @@ import SwiftUI
 import SwiftUIRoutes
 
 public struct ExampleView: View {
-    @State private var routes: Routes
+    @State private var routes = Routes()
 
     public init() {
-        let routes = Routes()
         PackageA.register(routes: routes)
         PackageB.register(routes: routes)
-        _routes = State(initialValue: routes)
     }
 
     public var body: some View {
-        NavigationStack(path: $routes.path) {
+        NavigationStack(path: routes.path) {
             List {
                 Button("Package A (Type)") {
-                    routes.push(PackageA.Value(text: "Hello World!"))
+                    routes.push(value: PackageA.Value(text: "Hello World!"))
                 }
 
                 Button("Package A (URL)") {
-                    routes.push("/package-a/value", params: ["text": "Hello!"])
+                    routes.push(path: "/package-a/value", params: ["text": "Hello!"])
                 }
 
                 Button("Package B (Type)") {
-                    routes.push(PackageB.Value(systemImage: "heart.fill"))
+                    routes.push(value: PackageB.Value(systemImage: "heart.fill"))
                 }
 
                 Button("Package B (URL)") {
-                    routes.push("/package-b/value", params: ["systemName": "heart"])
+                    routes.push(path: "/package-b/value", params: ["systemName": "heart"])
                 }
             }
             .navigationTitle("Example")
