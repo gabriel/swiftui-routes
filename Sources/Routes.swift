@@ -59,7 +59,7 @@ public class Routes {
     }
 
     public func pop() {
-        guard !path.isEmpty else { return }
+        guard !_path.isEmpty else { return }
         _path.removeLast()
     }
 
@@ -68,7 +68,7 @@ public class Routes {
         switch route {
         case let .url(path, params):
             view(path: path, params: params)
-        case .value(let type, let value):
+        case .value(_, let value):
             view(value)
         }
     }
