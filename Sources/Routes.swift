@@ -49,11 +49,7 @@ public class Routes {
     public func push(path: String, params: [String: String] = [:]) {
         _path.append(Route.url(path: path, params: params))
     }
-
-    public func push(_ path: String) {
-        push(path: path)
-    }
-
+    
     public func push<T: Any>(value: T) {
         _path.append(Route.value(ObjectIdentifier(T.self), value))
     }
