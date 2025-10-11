@@ -1,9 +1,9 @@
 import SwiftUI
 
-struct RouteA { }
+struct RouteA: Hashable { }
 
-struct RouteB {
-    let params: [String: String]
+struct RouteB: Hashable {
+    let message: String
 }
 
 struct NavigationStackExample: View {
@@ -15,14 +15,14 @@ struct NavigationStackExample: View {
             AView()
         }
         routes.register(path: "/route/b") { url in
-            BView(params: url.params)
+            BView(message: String(describing: url.params))
         }
 
         routes.register(type: RouteA.self) { value in
             AView()
         }
         routes.register(type: RouteB.self) { value in
-            BView(params: value.params)
+            BView(message: String(value.message))
         }
     }
 
@@ -48,7 +48,7 @@ struct NavigationStackExample: View {
                 .buttonStyle(.borderedProminent)
 
                 Button("Go to /route/b (value)") {
-                    routes.push(value: RouteB(params: ["key1": "value1"]))
+                    routes.push(value: RouteB(message: "Hi!"))
                 }
                 .buttonStyle(.bordered)
             }
@@ -75,13 +75,13 @@ struct AView: View {
 struct BView: View {
     @Environment(Routes.self) var routes
 
-    let params: [String: String]
+    let message: String
 
     var body: some View {
         VStack {
             Text("View B")
 
-            Text(verbatim: "Params: \(params)")
+            Text(verbatim: message)
 
             Button("Go to /route/a") {
                 routes.push(path: "/route/a")

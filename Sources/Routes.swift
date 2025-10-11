@@ -50,8 +50,8 @@ public class Routes {
         _path.append(Route.url(path: path, params: params))
     }
     
-    public func push<T: Any>(value: T) {
-        _path.append(Route.value(ObjectIdentifier(T.self), value))
+    public func push<T: Hashable>(value: T) {
+        _path.append(Route.value(value))
     }
 
     public func pop() {
@@ -64,15 +64,16 @@ public class Routes {
         switch route {
         case let .url(path, params):
             view(path: path, params: params)
-        case .value(_, let value):
+        case .value(let value):
             view(value)
         }
     }
 
-    public func view(_ value: Any) -> AnyView {
-        let id = ObjectIdentifier(type(of: value))
+    public func view(_ value: AnyHashable) -> AnyView {
+        let originalType: Any.Type = type(of: value.base)
+        let id = ObjectIdentifier(originalType)
         guard let builder = objects[id] else {
-            return AnyView(Text("SwiftUIRoutes: No destination registered for type \(id))"))
+            return AnyView(Text("SwiftUIRoutes: No destination registered for \(String(describing: originalType))"))
         }
         return builder(value)
     }
