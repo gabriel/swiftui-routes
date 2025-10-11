@@ -1,14 +1,14 @@
 import SwiftUI
 
 struct RouteA: Routable {
-    var route: RouteResource { "/route/a" }
+    var route: Route { "/route/a" }
 }
 
 struct RouteB: Routable {
     let message: String
 
-    var route: RouteResource {
-        RouteResource(string: "/route/b?message=\(self.message)")
+    var route: Route {
+        Route(string: "/route/b?message=\(self.message)")
     }
 }
 

@@ -12,7 +12,7 @@ struct SwiftUIRoutesTests {
         struct SomeValue: Routable {
             let text: String
 
-            var route: RouteResource {
+            var route: Route {
                 "/some/value"
             }
         }
@@ -48,7 +48,7 @@ struct SwiftUIRoutesTests {
                 self.text = text
             }
 
-            var route: RouteResource {
+            var route: Route {
                 "/some/class"
             }
         }

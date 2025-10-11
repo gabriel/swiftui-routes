@@ -1,6 +1,6 @@
 import Foundation
 
-public struct RouteResource: Sendable, Hashable, ExpressibleByStringLiteral, CustomStringConvertible {
+public struct Route: Sendable, Hashable, ExpressibleByStringLiteral {
     public let path: String
     public let params: [String: String]
 
@@ -23,37 +23,6 @@ public struct RouteResource: Sendable, Hashable, ExpressibleByStringLiteral, Cus
         } else {
             self.init(path: string)
         }
-    }
-
-    public var description: String {
-        guard !params.isEmpty else {
-            return path
-        }
-
-        var additionalCapacity = 0
-        for (key, value) in params {
-            guard let first = key.first, first != ":" else { continue }
-            additionalCapacity += key.utf8.count + value.utf8.count + 2
-        }
-
-        guard additionalCapacity > 0 else {
-            return path
-        }
-
-        var result = path
-        result.reserveCapacity(result.utf8.count + additionalCapacity)
-
-        var separator: Character = "?"
-        for (key, value) in params {
-            guard let first = key.first, first != ":" else { continue }
-            result.append(separator)
-            result.append(key)
-            result.append("=")
-            result.append(value)
-            separator = "&"
-        }
-
-        return result
     }
 
     public func param(_ key: String) -> String? {
@@ -88,5 +57,38 @@ public struct RouteResource: Sendable, Hashable, ExpressibleByStringLiteral, Cus
         }
 
         return nil
+    }
+}
+
+extension Route: CustomStringConvertible {
+    public var description: String {
+        guard !params.isEmpty else {
+            return path
+        }
+
+        var additionalCapacity = 0
+        for (key, value) in params {
+            guard let first = key.first, first != ":" else { continue }
+            additionalCapacity += key.utf8.count + value.utf8.count + 2
+        }
+
+        guard additionalCapacity > 0 else {
+            return path
+        }
+
+        var result = path
+        result.reserveCapacity(result.utf8.count + additionalCapacity)
+
+        var separator: Character = "?"
+        for (key, value) in params {
+            guard let first = key.first, first != ":" else { continue }
+            result.append(separator)
+            result.append(key)
+            result.append("=")
+            result.append(value)
+            separator = "&"
+        }
+
+        return result
     }
 }

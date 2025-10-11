@@ -5,7 +5,7 @@ public class Routes {
     private var _path: [RouteElement] = []
 
     private var objects: [ObjectIdentifier: (Any) -> AnyView] = [:]
-    private var exactPaths: [String: (RouteResource) -> AnyView] = [:]
+    private var exactPaths: [String: (Route) -> AnyView] = [:]
     private var parameterizedPaths: [ParameterizedPath] = []
     public var path: Binding<[RouteElement]> {
         Binding(
@@ -26,16 +26,16 @@ public class Routes {
         }
     }
 
-    public func register(path: String, @ViewBuilder _ build: @escaping (RouteResource) -> some View) {
-        let builder: (RouteResource) -> AnyView = { resource in
+    public func register(path: String, @ViewBuilder _ build: @escaping (Route) -> some View) {
+        let builder: (Route) -> AnyView = { resource in
             AnyView(build(resource).environment(self))
         }
         store(path: path, builder: builder)
     }
 
-    public func register(paths: [String], @ViewBuilder _ build: @escaping (RouteResource) -> some View) {
+    public func register(paths: [String], @ViewBuilder _ build: @escaping (Route) -> some View) {
         for path in paths {
-            let builder: (RouteResource) -> AnyView = { resource in
+            let builder: (Route) -> AnyView = { resource in
                 AnyView(build(resource).environment(self))
             }
             store(path: path, builder: builder)
@@ -80,10 +80,10 @@ public class Routes {
     @ViewBuilder
     public func view(path: String, params: [String: String] = [:]) -> some View {
         if let builder = exactPaths[path] {
-            builder(RouteResource(path: path, params: params))
+            builder(Route(path: path, params: params))
         } else {
             if let (matchedBuilder, combinedParams) = matchParameterizedPath(path: path, params: params) {
-                matchedBuilder(RouteResource(path: path, params: combinedParams))
+                matchedBuilder(Route(path: path, params: combinedParams))
             } else {
                 let registeredPaths = (Array(exactPaths.keys) + parameterizedPaths.map(\.pattern)).sorted()
 
@@ -109,9 +109,9 @@ public class Routes {
 
         let pattern: String
         let segments: [Segment]
-        let builder: (RouteResource) -> AnyView
+        let builder: (Route) -> AnyView
 
-        init(pattern: String, builder: @escaping (RouteResource) -> AnyView) {
+        init(pattern: String, builder: @escaping (Route) -> AnyView) {
             self.pattern = pattern
             self.segments = pattern.split(separator: "/", omittingEmptySubsequences: true).map { substring in
                 if substring.hasPrefix(":"), substring.count > 1 {
@@ -154,7 +154,7 @@ public extension View {
 }
 
 private extension Routes {
-    func store(path: String, builder: @escaping (RouteResource) -> AnyView) {
+    func store(path: String, builder: @escaping (Route) -> AnyView) {
         if path.contains(":") {
             parameterizedPaths.append(ParameterizedPath(pattern: path, builder: builder))
         } else {
@@ -162,7 +162,7 @@ private extension Routes {
         }
     }
 
-    func matchParameterizedPath(path: String, params: [String: String]) -> ((RouteResource) -> AnyView, [String: String])? {
+    func matchParameterizedPath(path: String, params: [String: String]) -> ((Route) -> AnyView, [String: String])? {
         for candidate in parameterizedPaths {
             guard let matchedParams = candidate.match(path: path) else { continue }
             var combined: [String: String] = matchedParams
