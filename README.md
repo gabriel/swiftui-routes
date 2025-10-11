@@ -4,6 +4,8 @@ Alternative to NavigationPath to allow for more flexibility when using and defin
 
 Routes are based on either URLs (loosely coupled) or Types (strongly coupled).
 
+Route values don't have to implement Hashable, only Routable.
+
 ## URL
 
 URL registered routes are loosely coupled, good for deep linking and complex package dependencies.

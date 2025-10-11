@@ -2,19 +2,19 @@ import SwiftUI
 
 @MainActor @Observable
 public class Routes {
-    private var _path: RoutePath = []
+    private var _path: [Route] = []
 
     private var objects: [ObjectIdentifier: (Any) -> AnyView] = [:]
-    private var exactPaths: [String: (RouteURL) -> AnyView] = [:]
+    private var exactPaths: [String: (RouteResource) -> AnyView] = [:]
     private var parameterizedPaths: [ParameterizedPath] = []
-    public var path: Binding<RoutePath> {
+    public var path: Binding<[Route]> {
         Binding(
             get: { self._path },
             set: { self._path = $0 }
         )
     }
 
-    public init(initialPath: RoutePath = []) {
+    public init(initialPath: [Route] = []) {
         _path = initialPath
     }
 
@@ -26,17 +26,17 @@ public class Routes {
         }
     }
 
-    public func register(path: String, @ViewBuilder _ build: @escaping (RouteURL) -> some View) {
-        let builder: (RouteURL) -> AnyView = { url in
-            AnyView(build(url).environment(self))
+    public func register(path: String, @ViewBuilder _ build: @escaping (RouteResource) -> some View) {
+        let builder: (RouteResource) -> AnyView = { resource in
+            AnyView(build(resource).environment(self))
         }
         store(path: path, builder: builder)
     }
 
-    public func register(paths: [String], @ViewBuilder _ build: @escaping (RouteURL) -> some View) {
+    public func register(paths: [String], @ViewBuilder _ build: @escaping (RouteResource) -> some View) {
         for path in paths {
-            let builder: (RouteURL) -> AnyView = { url in
-                AnyView(build(url).environment(self))
+            let builder: (RouteResource) -> AnyView = { resource in
+                AnyView(build(resource).environment(self))
             }
             store(path: path, builder: builder)
         }
@@ -50,7 +50,7 @@ public class Routes {
         _path.append(Route.url(path: path, params: params))
     }
     
-    public func push<T: Hashable>(value: T) {
+    public func push(value: Routable) {
         _path.append(Route.value(value))
     }
 
@@ -69,11 +69,10 @@ public class Routes {
         }
     }
 
-    public func view(_ value: AnyHashable) -> AnyView {
-        let originalType: Any.Type = type(of: value.base)
-        let id = ObjectIdentifier(originalType)
+    public func view(_ value: Any) -> AnyView {
+        let id = ObjectIdentifier(type(of: value))
         guard let builder = objects[id] else {
-            return AnyView(Text("SwiftUIRoutes: No destination registered for \(String(describing: originalType))"))
+            return AnyView(Text("SwiftUIRoutes: No destination registered for \(String(describing: type(of: value)))"))
         }
         return builder(value)
     }
@@ -81,10 +80,10 @@ public class Routes {
     @ViewBuilder
     public func view(path: String, params: [String: String] = [:]) -> some View {
         if let builder = exactPaths[path] {
-            builder(RouteURL(path: path, params: params))
+            builder(RouteResource(path: path, params: params))
         } else {
             if let (matchedBuilder, combinedParams) = matchParameterizedPath(path: path, params: params) {
-                matchedBuilder(RouteURL(path: path, params: combinedParams))
+                matchedBuilder(RouteResource(path: path, params: combinedParams))
             } else {
                 let registeredPaths = (Array(exactPaths.keys) + parameterizedPaths.map(\.pattern)).sorted()
 
@@ -110,9 +109,9 @@ public class Routes {
 
         let pattern: String
         let segments: [Segment]
-        let builder: (RouteURL) -> AnyView
+        let builder: (RouteResource) -> AnyView
 
-        init(pattern: String, builder: @escaping (RouteURL) -> AnyView) {
+        init(pattern: String, builder: @escaping (RouteResource) -> AnyView) {
             self.pattern = pattern
             self.segments = pattern.split(separator: "/", omittingEmptySubsequences: true).map { substring in
                 if substring.hasPrefix(":"), substring.count > 1 {
@@ -155,7 +154,7 @@ public extension View {
 }
 
 private extension Routes {
-    func store(path: String, builder: @escaping (RouteURL) -> AnyView) {
+    func store(path: String, builder: @escaping (RouteResource) -> AnyView) {
         if path.contains(":") {
             parameterizedPaths.append(ParameterizedPath(pattern: path, builder: builder))
         } else {
@@ -163,7 +162,7 @@ private extension Routes {
         }
     }
 
-    func matchParameterizedPath(path: String, params: [String: String]) -> ((RouteURL) -> AnyView, [String: String])? {
+    func matchParameterizedPath(path: String, params: [String: String]) -> ((RouteResource) -> AnyView, [String: String])? {
         for candidate in parameterizedPaths {
             guard let matchedParams = candidate.match(path: path) else { continue }
             var combined: [String: String] = matchedParams

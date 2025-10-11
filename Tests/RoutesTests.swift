@@ -9,8 +9,12 @@ import Testing
 struct SwiftUIRoutesTests {
     @Test
     func testRouteValue() throws {
-        struct SomeValue: Hashable {
+        struct SomeValue: Routable {
             let text: String
+
+            var resource: RouteResource {
+                "/some/value"
+            }
         }
 
         let routes = Routes()
@@ -37,19 +41,15 @@ struct SwiftUIRoutesTests {
 
     @Test
     func testRouteValueClass() throws {
-        class SomeClass: Hashable {
+        class SomeClass: Routable {
             var text: String
 
             init(text: String) {
                 self.text = text
             }
 
-            static func == (lhs: SomeClass, rhs: SomeClass) -> Bool {
-                lhs.text == rhs.text
-            }
-
-            func hash(into hasher: inout Hasher) {
-                hasher.combine(text)
+            var resource: RouteResource {
+                "/some/class"
             }
         }
 

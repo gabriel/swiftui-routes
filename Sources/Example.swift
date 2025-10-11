@@ -1,9 +1,15 @@
 import SwiftUI
 
-struct RouteA: Hashable { }
+struct RouteA: Routable {
+    var resource: RouteResource { "/route/a" }
+}
 
-struct RouteB: Hashable {
+struct RouteB: Routable {
     let message: String
+
+    var resource: RouteResource {
+        RouteResource(string: "/route/b?message=\(self.message)")
+    }
 }
 
 struct NavigationStackExample: View {
