@@ -2,19 +2,19 @@ import SwiftUI
 
 @MainActor @Observable
 public class Routes {
-    private var _path: [Route] = []
+    private var _path: [RouteElement] = []
 
     private var objects: [ObjectIdentifier: (Any) -> AnyView] = [:]
     private var exactPaths: [String: (RouteResource) -> AnyView] = [:]
     private var parameterizedPaths: [ParameterizedPath] = []
-    public var path: Binding<[Route]> {
+    public var path: Binding<[RouteElement]> {
         Binding(
             get: { self._path },
             set: { self._path = $0 }
         )
     }
 
-    public init(initialPath: [Route] = []) {
+    public init(initialPath: [RouteElement] = []) {
         _path = initialPath
     }
 
@@ -47,11 +47,11 @@ public class Routes {
     }
 
     public func push(path: String, params: [String: String] = [:]) {
-        _path.append(Route.url(path: path, params: params))
+        _path.append(RouteElement.url(path: path, params: params))
     }
     
     public func push(value: Routable) {
-        _path.append(Route.value(value))
+        _path.append(RouteElement.value(value))
     }
 
     public func pop() {
@@ -60,7 +60,7 @@ public class Routes {
     }
 
     @ViewBuilder
-    public func view(route: Route) -> some View {
+    public func view(route: RouteElement) -> some View {
         switch route {
         case let .url(path, params):
             view(path: path, params: params)
@@ -146,7 +146,7 @@ public class Routes {
 
 public extension View {
     func routesDestination(_ routes: Routes) -> some View {
-        navigationDestination(for: Route.self) { route in
+        navigationDestination(for: RouteElement.self) { route in
             routes.view(route: route)
         }
         .environment(routes)
