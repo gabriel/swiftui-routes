@@ -26,6 +26,6 @@ func view(_ value: Value) -> some View {
 }
 
 @ViewBuilder
-func view(_ url: RouteURL) -> some View {
-    view(Value(text: url.params["text"] ?? ""))
+func view(_ resource: RouteResource) -> some View {
+    view(Value(text: resource.params["text"] ?? ""))
 }
