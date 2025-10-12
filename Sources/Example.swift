@@ -13,10 +13,11 @@ struct RouteB: Routable {
 }
 
 struct NavigationStackExample: View {
-    @State private var routes = Routes()
+    @State private var routes: Routes
 
     
     init() {
+        let routes = Routes()
         routes.register(path: "/route/a") { _ in
             AView()
         }
@@ -30,6 +31,7 @@ struct NavigationStackExample: View {
         routes.register(type: RouteB.self) { value in
             BView(message: String(value.message))
         }
+        _routes = State(initialValue: routes)
     }
 
     var body: some View {

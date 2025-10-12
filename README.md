@@ -55,13 +55,15 @@ import SwiftUI
 import SwiftUIRoutes
 
 struct MyApp: View {
-    @State var routes = Routes()
+    @State var routes: Routes
 
     init() {
+        let routes = Routes()        
         // Register your routes
         routes.register(path: "/my/route") {
             MyRouteView()
         }
+        _routes = State(initialValue: routes)
     }
 
     var body: some View {
