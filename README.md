@@ -2,7 +2,7 @@
 
 Alternative to NavigationPath to allow for more flexibility when using and defining navigation routes across packages with complex dependencies.
 
-Routes are based on either URLs (loosely coupled) or Types (strongly coupled).
+Routes are based on either URLs (loosely coupled, requires a resource fetch) or Types (strongly coupled, no resource fetch).
 
 Route values don't have to implement Hashable, only Routable.
 
@@ -18,7 +18,7 @@ import SwiftUIRoutes
 func register(routes: Routes) {
     routes.register(path: "/album/:id") { url in
         if let id = url.param("id") {
-            AlbumView(id: id)
+            AlbumView(id: id) // Will fetch Album data from id
         }
     }
 }
@@ -37,18 +37,20 @@ import SwiftUIRoutes
 @State var routes = Routes()
 
 func register(routes: Routes) {
-    routes.register(type: Value.self) { value in 
-        ValueView(value)
+    routes.register(type: Album.self) { album in 
+        AlbumView(album: album)
     }
 }
 
 // Use the route
-routes.push(value: Value(text: "Hello World!"))
+let album: Album = ... 
+routes.push(value: album)
 ```
 
 ## Observable
 
 Routes is an Observable accessible from the Environment (view hierarchy) for any registered views.
+You can use the Routes instance to change push and pop routes from the current navigation stack.
 
 ```swift
 import SwiftUI
@@ -57,11 +59,12 @@ import SwiftUIRoutes
 struct MyApp: View {
     @State var routes: Routes
 
-    init() {
+    init() {        
         let routes = Routes()        
-        // Register your routes
-        routes.register(path: "/my/route") {
-            MyRouteView()
+        routes.register(path: "/album/:id") { url in
+            if let id = url.param("id") {
+                AlbumView(id: id)
+            }
         }
         _routes = State(initialValue: routes)
     }
@@ -69,28 +72,29 @@ struct MyApp: View {
     var body: some View {
         NavigationStack(path: routes.path) {
             MyAppView()                
+                // This configures the routes for navigation stack and adds it to the environment
                 .routesDestination(routes)
         }
     }
 }
 
 struct MyAppView: View {
+    // Routes is accessible via the Environment to push
     @Environment(Routes.self) var routes
 
     var body: some View {
-        Button("Push") {
-            routes.push(path: "/my/route")
+        Button("Album (123)") {
+            routes.push(path: "/album/123")
         }
     }
 }
 
-struct MyRouteView: View {
-    // As a registered route, Routes is accessbile via the Environment
+struct AlbumView: View {
+    // Routes is accessible via the Environment to pop
     @Environment(Routes.self) var routes
 
     var body: some View {
-        Text("My route")
-        Button("Pop") {
+        Button("Go back") {
             routes.pop()
         }
     }
@@ -110,7 +114,7 @@ Add the following to your `Package.swift` file:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/gabriel/swiftui-routes", from: "0.1.3")
+    .package(url: "https://github.com/gabriel/swiftui-routes", from: "0.2.1")
 ]
 
 .target(
@@ -123,6 +127,7 @@ dependencies: [
 ## Example (Multiple Packages)
 
 Here we register routes from package A and package B. We use url based routing for loose coupling.
+This can be helpful for avoiding cyclical dependencies when two different packages need to route to each other.
 
 ```swift
 import PackageA
@@ -158,9 +163,9 @@ public struct ExampleView: View {
                 Button("Package B (URL)") {
                     routes.push(path: "/package-b/value", params: ["systemName": "heart"])
                 }
-            }
-            .navigationTitle("Example")
+            }            
             .routesDestination(routes)
+            .navigationTitle("Example")
         }
     }
 }
