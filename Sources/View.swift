@@ -78,6 +78,7 @@ private struct RoutePushPathModifier: ViewModifier {
                 content
                     .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
         case .tap:
             content
                 .contentShape(Rectangle())
