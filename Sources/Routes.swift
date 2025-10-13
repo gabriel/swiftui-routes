@@ -2,20 +2,20 @@ import SwiftUI
 
 @MainActor @Observable
 public class Routes {
-    public var path: RoutePath = []
+    private var _path: [RouteElement] = []
 
-    var objects: [ObjectIdentifier: (Any) -> AnyView] = [:]
-    var paths: [String: (RouteURL) -> AnyView] = [:]
-
-    public var pathBinding: Binding<RoutePath> {
+    private var objects: [ObjectIdentifier: (Any) -> AnyView] = [:]
+    private var exactPaths: [String: (Route) -> AnyView] = [:]
+    private var parameterizedPaths: [ParameterizedPath] = []
+    public var path: Binding<[RouteElement]> {
         Binding(
-            get: { self.path },
-            set: { self.path = $0 }
+            get: { self._path },
+            set: { self._path = $0 }
         )
     }
 
-    public init(initialPath: RoutePath = []) {
-        path = initialPath
+    public init(initialPath: [RouteElement] = []) {
+        _path = initialPath
     }
 
     public func register<T>(type: T.Type, _ build: @escaping (T) -> some View) {
@@ -26,73 +26,152 @@ public class Routes {
         }
     }
 
-    public func register(path: String, _ build: @escaping (RouteURL) -> some View) {
-        paths[path] = { url in
-            AnyView(build(url).environment(self))
+    public func register(path: String, @ViewBuilder _ build: @escaping (Route) -> some View) {
+        let builder: (Route) -> AnyView = { resource in
+            AnyView(build(resource).environment(self))
+        }
+        store(path: path, builder: builder)
+    }
+
+    public func register(paths: [String], @ViewBuilder _ build: @escaping (Route) -> some View) {
+        for path in paths {
+            let builder: (Route) -> AnyView = { resource in
+                AnyView(build(resource).environment(self))
+            }
+            store(path: path, builder: builder)
         }
     }
 
-    public func push(_ route: Route) {
-        path.append(route)
+    public func push(url: URL) {
+        push(path: url.normalizedPath, params: url.params)
     }
 
-    public func push(_ value: some Hashable) {
-        let id = ObjectIdentifier(type(of: value))
-        push(Route.value(id, value))
+    public func push(path: String, params: [String: String] = [:]) {
+        _path.append(RouteElement.url(path: path, params: params))
     }
-
-    public func push(_ path: String, params: [String: String] = [:]) {
-        push(Route.url(path: path, params: params))
+    
+    public func push(value: Routable) {
+        _path.append(RouteElement.value(value))
     }
 
     public func pop() {
-        path.removeLast()
+        guard !_path.isEmpty else { return }
+        _path.removeLast()
     }
 
-    public func view(route: Route) -> AnyView {
+    @ViewBuilder
+    public func view(route: RouteElement) -> some View {
         switch route {
-        case let .value(id, value):
-            guard let builder = objects[id] else {
-                return AnyView(Text("SwiftUIRoutes: No destination registered for type \(id))"))
-            }
-            return builder(value)
         case let .url(path, params):
-            return view(path: path, params: params)
+            view(path: path, params: params)
+        case .value(let value):
+            view(value)
         }
     }
 
-    public func view(_ value: some Hashable) -> AnyView {
+    public func view(_ value: Any) -> AnyView {
         let id = ObjectIdentifier(type(of: value))
         guard let builder = objects[id] else {
-            return AnyView(Text("SwiftUIRoutes: No destination registered for type \(id))"))
+            return AnyView(Text("SwiftUIRoutes: No destination registered for \(String(describing: type(of: value)))"))
         }
         return builder(value)
     }
 
-    public func view(path: String, params: [String: String] = [:]) -> AnyView {
-        guard let builder = paths[path] else {
-            return AnyView(
+    @ViewBuilder
+    public func view(path: String, params: [String: String] = [:]) -> some View {
+        if let builder = exactPaths[path] {
+            builder(Route(path: path, params: params))
+        } else {
+            if let (matchedBuilder, combinedParams) = matchParameterizedPath(path: path, params: params) {
+                matchedBuilder(Route(path: path, params: combinedParams))
+            } else {
+                let registeredPaths = (Array(exactPaths.keys) + parameterizedPaths.map(\.pattern)).sorted()
+
                 VStack(alignment: .leading) {
                     Text("Oops")
                         .font(.title)
                     Text("No destination registered for path \(path)")
-                    Text("# of paths: \(paths.count)")
-                    ForEach(paths.keys.sorted(), id: \.self) { p in
+                    Text("# of paths: \(exactPaths.count + parameterizedPaths.count)")
+                    ForEach(registeredPaths, id: \.self) { p in
                         Text("Path: \(p)")
                     }
                 }
                 .padding()
-            )
+            }
         }
-        return builder(RouteURL(path: path, params: params))
+    }
+
+    private struct ParameterizedPath {
+        enum Segment {
+            case literal(String)
+            case parameter(String)
+        }
+
+        let pattern: String
+        let segments: [Segment]
+        let builder: (Route) -> AnyView
+
+        init(pattern: String, builder: @escaping (Route) -> AnyView) {
+            self.pattern = pattern
+            self.segments = pattern.split(separator: "/", omittingEmptySubsequences: true).map { substring in
+                if substring.hasPrefix(":"), substring.count > 1 {
+                    return .parameter(String(substring.dropFirst()))
+                }
+                return .literal(String(substring))
+            }
+            self.builder = builder
+        }
+
+        func match(path: String) -> [String: String]? {
+            let parts = path.split(separator: "/", omittingEmptySubsequences: true)
+            guard parts.count == segments.count else { return nil }
+
+            var params: [String: String] = [:]
+
+            for (segment, part) in zip(segments, parts) {
+                switch segment {
+                case .literal(let value):
+                    guard value == part else { return nil }
+                case .parameter(let name):
+                    let stringValue = String(part)
+                    params[name] = stringValue
+                    params[":\(name)"] = stringValue
+                }
+            }
+
+            return params
+        }
     }
 }
 
 public extension View {
     func routesDestination(_ routes: Routes) -> some View {
-        navigationDestination(for: Route.self) { route in
+        navigationDestination(for: RouteElement.self) { route in
             routes.view(route: route)
         }
         .environment(routes)
+    }
+}
+
+private extension Routes {
+    func store(path: String, builder: @escaping (Route) -> AnyView) {
+        if path.contains(":") {
+            parameterizedPaths.append(ParameterizedPath(pattern: path, builder: builder))
+        } else {
+            exactPaths[path] = builder
+        }
+    }
+
+    func matchParameterizedPath(path: String, params: [String: String]) -> ((Route) -> AnyView, [String: String])? {
+        for candidate in parameterizedPaths {
+            guard let matchedParams = candidate.match(path: path) else { continue }
+            var combined: [String: String] = matchedParams
+            params.forEach { key, value in
+                combined[key] = value
+            }
+            return (candidate.builder, combined)
+        }
+
+        return nil
     }
 }

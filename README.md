@@ -4,6 +4,8 @@ Alternative to NavigationPath to allow for more flexibility when using and defin
 
 Routes are based on either URLs (loosely coupled) or Types (strongly coupled).
 
+Route values don't have to implement Hashable, only Routable.
+
 ## URL
 
 URL registered routes are loosely coupled, good for deep linking and complex package dependencies.
@@ -11,16 +13,18 @@ URL registered routes are loosely coupled, good for deep linking and complex pac
 ```swift
 import SwiftUIRoutes
 
-// In your package
-routes.register(path: "/my/route", myRoute)
+@State var routes = Routes()
 
-// Define view for route
-@ViewBuilder
-func myRoute(_ url: RouteURL) -> some View {
+func register(routes: Routes) {
+    routes.register(path: "/album/:id") { url in
+        if let id = url.param("id") {
+            AlbumView(id: id)
+        }
+    }
 }
 
 // Use the route
-routes.push("/my/route", params: ["text": "Hello!"])
+routes.push(path: "/album/123")
 ```
 
 ## Types
@@ -30,16 +34,16 @@ Type registered routes are strongly coupled, compiled, good for ensuring correct
 ```swift
 import SwiftUIRoutes
 
-// In your package
-routes.register(type: Value.self, myRoute)
+@State var routes = Routes()
 
-// Define view for route
-@ViewBuilder
-func myRoute(_ value: Value) -> some View {
+func register(routes: Routes) {
+    routes.register(type: Value.self) { value in 
+        ValueView(value)
+    }
 }
 
 // Use the route
-routes.push(Value(text: "Hello World!"))
+routes.push(value: Value(text: "Hello World!"))
 ```
 
 ## Observable
@@ -54,43 +58,39 @@ struct MyApp: View {
     @State var routes: Routes
 
     init() {
-        let routes = Routes()
-        
+        let routes = Routes()        
         // Register your routes
-        routes.register(path: "/my/route", myRoute)
-
+        routes.register(path: "/my/route") {
+            MyRouteView()
+        }
         _routes = State(initialValue: routes)
     }
 
     var body: some View {
-        NavigationStack(path: $routes.path) {}
-            MyView()                
+        NavigationStack(path: routes.path) {
+            MyAppView()                
                 .routesDestination(routes)
         }
     }
-
-    func myRoute(_ url: RouteURL) -> some View {
-        MyRoute()
-    }
 }
 
-struct MyView: View {
+struct MyAppView: View {
     @Environment(Routes.self) var routes
 
     var body: some View {
-        Button {
-            routes.push("/my/route")
+        Button("Push") {
+            routes.push(path: "/my/route")
         }
     }
 }
 
-struct MyRoute: View {
+struct MyRouteView: View {
     // As a registered route, Routes is accessbile via the Environment
     @Environment(Routes.self) var routes
 
     var body: some View {
         Text("My route")
-        Button {
+        Button("Pop") {
             routes.pop()
         }
     }
@@ -131,32 +131,30 @@ import SwiftUI
 import SwiftUIRoutes
 
 public struct ExampleView: View {
-    @State private var routes: Routes
+    @State private var routes = Routes()
 
     public init() {
-        let routes = Routes()
         PackageA.register(routes: routes)
         PackageB.register(routes: routes)
-        _routes = State(initialValue: routes)
     }
 
     public var body: some View {
-        NavigationStack(path: $routes.path) {
+        NavigationStack(path: routes.path) {
             List {
                 Button("Package A (Type)") {
-                    routes.push(PackageA.Value(text: "Hello World!"))
+                    routes.push(value: PackageA.Value(text: "Hello World!"))
                 }
 
                 Button("Package A (URL)") {
-                    routes.push("/package-a/value", params: ["text": "Hello!"])
+                    routes.push(path: "/package-a/value", params: ["text": "Hello!"])
                 }
 
                 Button("Package B (Type)") {
-                    routes.push(PackageB.Value(systemImage: "heart.fill"))
+                    routes.push(value: PackageB.Value(systemImage: "heart.fill"))
                 }
 
                 Button("Package B (URL)") {
-                    routes.push("/package-b/value", params: ["systemName": "heart"])
+                    routes.push(path: "/package-b/value", params: ["systemName": "heart"])
                 }
             }
             .navigationTitle("Example")
@@ -198,8 +196,8 @@ struct MyView: View {
             }
             .buttonStyle(.bordered)
 
-            Button("Back") {
-                routes.push("/package-a/value")
+            Button("Push") {
+                routes.push(path: "/package-a/value")
             }
             .buttonStyle(.bordered)
 

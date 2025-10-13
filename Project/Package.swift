@@ -16,15 +16,15 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(path: "../SwiftUIRoutes"),
-        .package(path: "../PackageA"),
-        .package(path: "../PackageB")
+        .package(path: ".."),
+        .package(path: "PackageA"),
+        .package(path: "PackageB")
     ],
     targets: [
         .target(
             name: "Example",
             dependencies: [
-                .product(name: "SwiftUIRoutes", package: "SwiftUIRoutes"),
+                .product(name: "SwiftUIRoutes", package: "swiftui-routes"),
                 .product(name: "PackageA", package: "PackageA"),
                 .product(name: "PackageB", package: "PackageB")
             ]
