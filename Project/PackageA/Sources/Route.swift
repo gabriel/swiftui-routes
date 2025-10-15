@@ -3,29 +3,22 @@ import SwiftUIRoutes
 
 @MainActor
 public func register(routes: Routes) {
-    routes.register(type: Value.self, view)
-    routes.register(path: "/package-a/value", view)
+    routes.register(type: Value.self) { value in
+        Text(String(describing: value))
+            .navigationTitle("PackageA")
+    }
+    routes.register(path: "/package-a/value") { url in
+        Text(String(describing: url))
+            .navigationTitle("PackageA")
+    }
 }
 
-public struct Value: Hashable, Sendable {
-    let id: UUID
+public struct Value: Routable, Sendable {
     let text: String
 
+    public var route: Route { "/package-a/value" }
+
     public init(text: String) {
-        id = UUID()
         self.text = text
     }
-}
-
-@ViewBuilder
-func view(_ value: Value) -> some View {
-    VStack {
-        Text(value.text)
-    }
-    .navigationTitle("PackageA")
-}
-
-@ViewBuilder
-func view(_ resource: RouteResource) -> some View {
-    view(Value(text: resource.params["text"] ?? ""))
 }

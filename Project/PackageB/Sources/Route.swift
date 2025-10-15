@@ -12,14 +12,14 @@ public func register(routes: Routes) {
 }
 
 struct MyView: View {
-    @Environment(Routes.self) var routes
+    @Environment(\.routePath) var path
 
     let value: Value
 
     var body: some View {
         VStack {
             Button("Back") {
-                routes.pop()
+                path.pop()
             }
             .buttonStyle(.bordered)
 
@@ -32,25 +32,17 @@ struct MyView: View {
     }
 }
 
-public struct Value: Hashable {
+public struct Value: Routable, Sendable {
+    let image: Image
+
+    public var route: Route { "/package-b/value" }
+
     public init(image: Image) {
-        id = UUID()
         self.image = image
     }
 
     public init(systemImage: String) {
-        id = UUID()
         image = Image(systemName: systemImage)
     }
-
-    let id: UUID
-    let image: Image
-
-    public static func == (lhs: Value, rhs: Value) -> Bool {
-        lhs.id == rhs.id
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-    }
+    
 }

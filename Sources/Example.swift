@@ -13,11 +13,10 @@ struct RouteB: Routable {
 }
 
 struct NavigationStackExample: View {
-    @State private var routes: Routes
+    let routes: Routes = Routes()
+    @State var path = RoutePath()
 
-    
     init() {
-        let routes = Routes()
         routes.register(path: "/route/a") { _ in
             AView()
         }
@@ -31,49 +30,66 @@ struct NavigationStackExample: View {
         routes.register(type: RouteB.self) { value in
             BView(message: String(value.message))
         }
-        _routes = State(initialValue: routes)
     }
 
     var body: some View {
-        NavigationStack(path: routes.path) {
-            VStack {
-                Text("Routes Example")
+        NavigationStack(path: $path) {
+            VStack(spacing: 20) {
+                Text("Button")
                     .font(.title)
 
                 Button("Go to /route/a") {
-                    routes.push(path: "/route/a")
+                    path.push(path: "/route/a")
                 }
                 .buttonStyle(.borderedProminent)
 
                 Button("Go to /route/a (value)") {
-                    routes.push(value: RouteA())
+                    path.push(value: RouteA())
                 }
                 .buttonStyle(.bordered)
 
                 Button("Go to /route/b") {
-                    routes.push(path: "/route/b", params: ["key1": "value1"])
+                    path.push(path: "/route/b", params: ["key1": "value1"])
                 }
                 .buttonStyle(.borderedProminent)
 
                 Button("Go to /route/b (value)") {
-                    routes.push(value: RouteB(message: "Hi!"))
+                    path.push(value: RouteB(message: "Hi!"))
                 }
                 .buttonStyle(.bordered)
+
+                Divider()
+
+                Text(".route()")
+                    .font(.title)
+
+                Text("Go to /route/a")
+                    .route(path: "/route/a")
+
+                Text("Go to /route/a")
+                    .route(path: "/route/a", style: .button(.default))
+
+                Text("Go to /route/a")
+                    .route(path: "/route/a", style: .button(.default))
+                    .buttonStyle(.borderedProminent)
+
+
             }
-            .routesDestination(routes)
+            //.environment(\.routePath, $path)
+            .routesDestination(routes: routes, path: $path)
         }
     }
 }
 
 struct AView: View {
-    @Environment(Routes.self) var routes
+    @Environment(\.routePath) var path
 
     var body: some View {
         VStack {
             Text("View A")
 
             Button("Go to /route/b") {
-                routes.push(path: "/route/b", params: ["key2": "value2"])
+                path.push(path: "/route/b", params: ["key2": "value2"])
             }
             .buttonStyle(.bordered)
         }
@@ -81,7 +97,7 @@ struct AView: View {
 }
 
 struct BView: View {
-    @Environment(Routes.self) var routes
+    @Environment(\.routePath) var path
 
     let message: String
 
@@ -92,7 +108,7 @@ struct BView: View {
             Text(verbatim: message)
 
             Button("Go to /route/a") {
-                routes.push(path: "/route/a")
+                path.push(path: "/route/a")
             }
             .buttonStyle(.bordered)
         }
