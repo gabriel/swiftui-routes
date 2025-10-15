@@ -1,105 +1,123 @@
 # SwiftUI Routes
 
-Alternative to NavigationPath to allow for more flexibility when using and defining navigation routes across packages with complex dependencies.
+SwiftUI Routes wraps `NavigationStack` with a small set of tools that let you register destinations by path or type and drive navigation without forcing your data to conform to `Hashable`. You decide how the routes are declared; views push values or paths and the library turns them into real destinations.
 
-Routes are based on either URLs (loosely coupled, requires a resource fetch) or Types (strongly coupled, no resource fetch).
+## Core Concepts
 
-Route values don't have to implement Hashable, only Routable.
+- **Routes** – register destinations for URL-like paths or strongly typed values.
+- **RoutePath** – the `NavigationStack` path (`[RouteElement]`) you mutate to drive navigation.
+- **RouteElement** – values (`.value`) or URLs (`.url`) placed on the path.
+- **Route** – helper type available inside path handlers for accessing route parameters.
 
-## URL
-
-URL registered routes are loosely coupled, good for deep linking and complex package dependencies.
+### Register destinations
 
 ```swift
-import SwiftUIRoutes
+let routes = Routes()
 
-@State var routes = Routes()
-
-func register(routes: Routes) {
-    routes.register(path: "/album/:id") { url in
-        if let id = url.param("id") {
-            AlbumView(id: id) // Will fetch Album data from id
-        }
+routes.register(path: "/album/:id") { route in
+    if let id = route.param("id") {
+        AlbumView(id: id)
     }
 }
 
-// Use the route
-routes.push(path: "/album/123")
-```
-
-## Types
-
-Type registered routes are strongly coupled, compiled, good for ensuring correct behavior.
-
-```swift
-import SwiftUIRoutes
-
-@State var routes = Routes()
-
-func register(routes: Routes) {
-    routes.register(type: Album.self) { album in 
-        AlbumView(album: album)
-    }
+routes.register(type: Album.self) { album in
+    // Album conforms to Routable and supplies a stable Route.
+    AlbumDetailView(album: album)
 }
-
-// Use the route
-let album: Album = ... 
-routes.push(value: album)
 ```
 
-## Observable
+- `path` routes accept URL-style patterns. Parameters are exposed through `Route.param(_:)` and in `route.params`.
+- `type` routes take any `Routable` value. Conforming values only need to supply a stable `Route` (no `Hashable` requirement).
 
-Routes is an Observable accessible from the Environment (view hierarchy) for any registered views.
-You can use the Routes instance to change push and pop routes from the current navigation stack.
+### Wire up `NavigationStack`
 
 ```swift
-import SwiftUI
-import SwiftUIRoutes
-
 struct MyApp: View {
-    @State var routes: Routes
+    private let routes = Routes()
+    @State private var path = RoutePath()
 
-    init() {        
-        let routes = Routes()        
-        routes.register(path: "/album/:id") { url in
-            if let id = url.param("id") {
-                AlbumView(id: id)
-            }
+    init() {
+        routes.register(path: "/album/:id") { route in
+            AlbumView(id: route.param("id") ?? "unknown")
         }
-        _routes = State(initialValue: routes)
+        routes.register(type: Album.self) { album in
+            AlbumDetailView(album: album)
+        }
     }
 
     var body: some View {
-        NavigationStack(path: routes.path) {
-            MyAppView()                
-                // This configures the routes for navigation stack and adds it to the environment
-                .routesDestination(routes)
+        NavigationStack(path: $path) {
+            HomeView()
+                .routesDestination(routes: routes, path: $path)
         }
     }
 }
+```
 
-struct MyAppView: View {
-    // Routes is accessible via the Environment to push
-    @Environment(Routes.self) var routes
+`routesDestination` installs the registered destinations and exports the `RoutePath` binding through the environment (`\.routePath`) so any view in the hierarchy can push or pop.
+
+### Push and pop from views
+
+```swift
+struct HomeView: View {
+    @Environment(\.routePath) private var path
 
     var body: some View {
-        Button("Album (123)") {
-            routes.push(path: "/album/123")
+        VStack {
+            Button("Album (123)") {
+                path.push(path: "/album/123")
+            }
+
+            Button("Featured Album") {
+                // Album conforms to Routable.
+                path.push(value: Album(id: "featured"))
+            }
         }
     }
 }
 
 struct AlbumView: View {
-    // Routes is accessible via the Environment to pop
-    @Environment(Routes.self) var routes
+    @Environment(\.routePath) private var path
+
+    let id: String
 
     var body: some View {
-        Button("Go back") {
-            routes.pop()
-        }
+        Button("Back") { path.pop() }
     }
 }
 ```
+
+Prefer a declarative modifier? Wrap any view in a `route` call:
+
+```swift
+Text("Open Album")
+    .route(path: "/album/123")
+
+MyAlbumRow(album: album)
+    .route(value: album, style: .tap())
+```
+
+The modifier can behave like a plain button (`.button()`) or add a tap gesture (`.tap()`), and always pushes by default (`.push()`).
+
+### Render registered destinations manually
+
+`Routes` can also build a view for a registered path or value outside of a navigation stack:
+
+```swift
+let view = routes.view(path: "/album/999", params: ["preview": "true"])
+```
+
+### Working with `Route`
+
+`Route` is passed to every path builder. It normalizes string or URL inputs and exposes utilities for parameters:
+
+```swift
+routes.register(path: "/products/:id") { route in
+    ProductView(productID: route.param("id") ?? "unknown")
+}
+```
+
+The `description` of a route includes its path and query items, which makes it handy for logging.
 
 ## Requirements
 
@@ -110,7 +128,7 @@ struct AlbumView: View {
 
 ### Swift Package Manager
 
-Add the following to your `Package.swift` file:
+Add the following dependency to your `Package.swift`:
 
 ```swift
 dependencies: [
@@ -124,10 +142,9 @@ dependencies: [
 )
 ```
 
-## Example (Multiple Packages)
+## Example: Multiple Packages
 
-Here we register routes from package A and package B. We use url based routing for loose coupling.
-This can be helpful for avoiding cyclical dependencies when two different packages need to route to each other.
+Let packages A and B register their own routes without tight coupling:
 
 ```swift
 import PackageA
@@ -136,46 +153,41 @@ import SwiftUI
 import SwiftUIRoutes
 
 public struct ExampleView: View {
-    @State private var routes: Routes
+    private let routes = Routes()
+    @State private var path = RoutePath()
 
     public init() {
-        let routes = Routes()
         PackageA.register(routes: routes)
         PackageB.register(routes: routes)
-        _routes = State(initialValue: routes)
     }
 
     public var body: some View {
-        NavigationStack(path: routes.path) {
+        NavigationStack(path: $path) {
             List {
                 Button("Package A (Type)") {
-                    routes.push(value: PackageA.Value(text: "Hello World!"))
+                    path.push(value: PackageA.Value(text: "Hello World!"))
                 }
 
                 Button("Package A (URL)") {
-                    routes.push(path: "/package-a/value", params: ["text": "Hello!"])
+                    path.push(path: "/package-a/value", params: ["text": "Hello!"])
                 }
 
                 Button("Package B (Type)") {
-                    routes.push(value: PackageB.Value(systemImage: "heart.fill"))
+                    path.push(value: PackageB.Value(systemImage: "heart.fill"))
                 }
 
                 Button("Package B (URL)") {
-                    routes.push(path: "/package-b/value", params: ["systemName": "heart"])
+                    path.push(path: "/package-b/value", params: ["systemName": "heart"])
                 }
-            }            
-            .routesDestination(routes)
+            }
+            .routesDestination(routes: routes, path: $path)
             .navigationTitle("Example")
         }
     }
 }
-
-#Preview {
-    ExampleView()
-
 ```
 
-### Register (in Package)
+### Register inside a package
 
 ```swift
 import SwiftUI
@@ -186,27 +198,23 @@ public func register(routes: Routes) {
     routes.register(type: Value.self) { value in
         MyView(value: value)
     }
-    routes.register(path: "/package-b/value") { url in
-        MyView(value: Value(systemImage: url.params["systemName"] ?? "heart.fill"))
+    routes.register(path: "/package-b/value") { route in
+        MyView(value: Value(systemImage: route.params["systemName"] ?? "heart.fill"))
     }
 }
 
 struct MyView: View {
-    @Environment(Routes.self) var routes
+    @Environment(\.routePath) var path
 
     let value: Value
 
     var body: some View {
         VStack {
-            Button("Back") {
-                routes.pop()
-            }
-            .buttonStyle(.bordered)
+            Button("Back") { path.pop() }
+                .buttonStyle(.bordered)
 
-            Button("Push") {
-                routes.push(path: "/package-a/value")
-            }
-            .buttonStyle(.bordered)
+            Button("Push") { path.push(path: "/package-a/value") }
+                .buttonStyle(.bordered)
 
             value.image
                 .resizable()
@@ -216,5 +224,4 @@ struct MyView: View {
         .navigationTitle("Package B")
     }
 }
-
 ```
