@@ -30,19 +30,22 @@ struct SwiftUIRoutesTests {
 
         assertRender(view: view, device: .any)
 
-        let stack = NavigationStack(path: routes.path) {
-            VStack { Text("Content") }.routesDestination(routes)
+        var path = RoutePath()
+        var pathBinding = Binding(get: { path }, set: { path = $0 })
+
+        let stack = NavigationStack(path: pathBinding) {
+            VStack { Text("Content") }.routesDestination(routes: routes, path: pathBinding)
         }
 
-        routes.push(value: value)
+        path.push(value: value)
 
         assertSnapshot(view: stack, device: .any)
     }
 
     @Test
     func testRouteValueClass() throws {
-        class SomeClass: Routable {
-            var text: String
+        final class SomeClass: Routable, Sendable {
+            let text: String
 
             init(text: String) {
                 self.text = text
@@ -77,11 +80,14 @@ struct SwiftUIRoutesTests {
 
         assertRender(view: attributedStringView, device: .any)
 
-        let stack = NavigationStack(path: routes.path) {
-            VStack { Text("Content") }.routesDestination(routes)
+        var path = RoutePath()
+        var pathBinding = Binding(get: { path }, set: { path = $0 })
+
+        let stack = NavigationStack(path: pathBinding) {
+            VStack { Text("Content") }.routesDestination(routes: routes, path: pathBinding)
         }
 
-        routes.push(value: value)
+        pathBinding.push(value: value)
 
         assertSnapshot(view: stack, device: .any)
     }
@@ -111,13 +117,16 @@ struct SwiftUIRoutesTests {
                 .background(.red)
         }
 
-        let view = NavigationStack(path: routes.path) {
+        var path = RoutePath()
+        var pathBinding = Binding(get: { path }, set: { path = $0 })
+
+        let view = NavigationStack(path: pathBinding) {
             VStack {
                 Text("Testing")
                     .foregroundColor(.blue)
                     .background(.red)
                 Button("Go to /route-a") {
-                    routes.push(path: "/route-a")
+                    path.push(path: "/route-a")
                 }
                 .buttonStyle(.borderedProminent)
             }
