@@ -53,7 +53,7 @@ public enum RouteActionType {
 }
 
 private struct RoutePushPathModifier: ViewModifier {
-    @Environment(Routes.self) var routes
+    @Environment(\.routePath) var routePath
 
     let path: String
     let params: [String: String]
@@ -63,7 +63,7 @@ private struct RoutePushPathModifier: ViewModifier {
     func internalAction() {
         switch style.actionType {
         case .push:
-            routes.push(path: path, params: params)
+            routePath.push(path: path, params: params)
         }
     }
 
@@ -92,7 +92,7 @@ private struct RoutePushPathModifier: ViewModifier {
 }
 
 private struct RoutePushValueModifier: ViewModifier {
-    @Environment(Routes.self) var routes
+    @Environment(\.routePath) var routePath
 
     let value: Routable
     let style: RouteStyle
@@ -101,7 +101,7 @@ private struct RoutePushValueModifier: ViewModifier {
     func internalAction() {
         switch style.actionType {
         case .push:
-            routes.push(value: value)
+            routePath.push(value: value)
         }
     }
 

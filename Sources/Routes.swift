@@ -1,34 +1,25 @@
+import Observation
 import SwiftUI
 
-@MainActor @Observable
-public class Routes {
-    private var _path: [RouteElement] = []
-
+@MainActor
+public final class Routes {
     private var objects: [ObjectIdentifier: (Any) -> AnyView] = [:]
     private var exactPaths: [String: (Route) -> AnyView] = [:]
     private var parameterizedPaths: [ParameterizedPath] = []
-    public var path: Binding<[RouteElement]> {
-        Binding(
-            get: { self._path },
-            set: { self._path = $0 }
-        )
-    }
 
-    public init(initialPath: [RouteElement] = []) {
-        _path = initialPath
-    }
+    public init() {}    
 
     public func register<T>(type: T.Type, _ build: @escaping (T) -> some View) {
         let id = ObjectIdentifier(type)
         objects[id] = { any in
             guard let t = any as? T else { return AnyView(Text("SwiftUIRoutes: Type mismatch")) }
-            return AnyView(build(t).environment(self))
+            return AnyView(build(t))
         }
     }
 
     public func register(path: String, @ViewBuilder _ build: @escaping (Route) -> some View) {
         let builder: (Route) -> AnyView = { resource in
-            AnyView(build(resource).environment(self))
+            AnyView(build(resource))
         }
         store(path: path, builder: builder)
     }
@@ -36,27 +27,10 @@ public class Routes {
     public func register(paths: [String], @ViewBuilder _ build: @escaping (Route) -> some View) {
         for path in paths {
             let builder: (Route) -> AnyView = { resource in
-                AnyView(build(resource).environment(self))
+                AnyView(build(resource))
             }
             store(path: path, builder: builder)
         }
-    }
-
-    public func push(url: URL) {
-        push(path: url.normalizedPath, params: url.params)
-    }
-
-    public func push(path: String, params: [String: String] = [:]) {
-        _path.append(RouteElement.url(path: path, params: params))
-    }
-    
-    public func push(value: Routable) {
-        _path.append(RouteElement.value(value))
-    }
-
-    public func pop() {
-        guard !_path.isEmpty else { return }
-        _path.removeLast()
     }
 
     @ViewBuilder
@@ -145,11 +119,11 @@ public class Routes {
 }
 
 public extension View {
-    func routesDestination(_ routes: Routes) -> some View {
+    func routesDestination(routes: Routes, path: Binding<RoutePath>) -> some View {
         navigationDestination(for: RouteElement.self) { route in
             routes.view(route: route)
+                .environment(\.routePath, path)
         }
-        .environment(routes)
     }
 }
 
