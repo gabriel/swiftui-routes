@@ -1,10 +1,10 @@
 import Foundation
 
-public struct Route: Sendable, Hashable, ExpressibleByStringLiteral {
+public struct Route: Sendable, Hashable, ExpressibleByStringLiteral, Routable {
     public let path: String
     public let params: [String: String]
 
-    public init(path: String, params: [String: String] = [:]) {
+    public init(_ path: String, _ params: [String: String] = [:]) {
         self.path = path
         self.params = params
     }
@@ -13,15 +13,17 @@ public struct Route: Sendable, Hashable, ExpressibleByStringLiteral {
         self.init(string: value)
     }
 
+    public var route: Route { self }
+
     public init(url: URL) {
-        self.init(path: url.normalizedPath, params: url.params)
+        self.init(url.normalizedPath, url.params)
     }
 
     public init(string: String) {
         if let url = URL(string: string) {
             self.init(url: url)
         } else {
-            self.init(path: string)
+            self.init(string)
         }
     }
 

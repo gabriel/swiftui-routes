@@ -15,6 +15,7 @@ struct RouteB: Routable {
 struct NavigationStackExample: View {
     let routes: Routes = Routes()
     @State var path = RoutePath()
+    @State var sheet: Routable?
 
     init() {
         routes.register(path: "/route/a") { _ in
@@ -34,49 +35,65 @@ struct NavigationStackExample: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            VStack(spacing: 20) {
-                Text("Button")
-                    .font(.title)
+            ScrollView {
+                VStack(spacing: 20) {
+                    Text("Button")
+                        .font(.title)
 
-                Button("Go to /route/a") {
-                    path.push(path: "/route/a")
-                }
-                .buttonStyle(.borderedProminent)
-
-                Button("Go to /route/a (value)") {
-                    path.push(value: RouteA())
-                }
-                .buttonStyle(.bordered)
-
-                Button("Go to /route/b") {
-                    path.push(path: "/route/b", params: ["key1": "value1"])
-                }
-                .buttonStyle(.borderedProminent)
-
-                Button("Go to /route/b (value)") {
-                    path.push(value: RouteB(message: "Hi!"))
-                }
-                .buttonStyle(.bordered)
-
-                Divider()
-
-                Text(".route()")
-                    .font(.title)
-
-                Text("Go to /route/a")
-                    .route(path: "/route/a")
-
-                Text("Go to /route/a")
-                    .route(path: "/route/a", style: .button(.default))
-
-                Text("Go to /route/a")
-                    .route(path: "/route/a", style: .button(.default))
+                    Button("Go to /route/a") {
+                        path.push("/route/a")
+                    }
                     .buttonStyle(.borderedProminent)
 
+                    Button("Go to /route/a (value)") {
+                        path.push(RouteA())
+                    }
+                    .buttonStyle(.bordered)
+
+                    Button("Go to /route/b?key1=value1") {
+                        path.push(Route("/route/b", ["key1": "value1"]))
+                    }
+                    .buttonStyle(.borderedProminent)
+
+                    Button("Go to /route/b (value)") {
+                        path.push(RouteB(message: "Hi!"))
+                    }
+                    .buttonStyle(.bordered)
+
+                    Divider()
+
+                    Text(".stack")
+                        .font(.title)
+
+                    Text("Go to /route/a")
+                        .stack("/route/a")
+
+                    Text("Go to /route/a")
+                        .stack("/route/a", style: .button(.default))
+
+                    Text("Go to /route/a")
+                        .stack("/route/a", style: .button(.default))
+                        .buttonStyle(.borderedProminent)
+
+                    Divider()
+
+                    Text(".sheet")
+                        .font(.title)
+
+                    Button("Present /route/a") {
+                        sheet = "/route/a"
+                    }
+                    .buttonStyle(.bordered)
+
+                    Text("Present /route/b?key3=value3")
+                        .sheet(Route("/route/b", ["key3": "value3"]), style: .button(.default))
+                        .buttonStyle(.borderedProminent)
+                        .padding(.horizontal)
+                }
 
             }
-            //.environment(\.routePath, $path)
             .routesDestination(routes: routes, path: $path)
+            .routesSheet(routes: routes, item: $sheet, path: $path)
         }
     }
 }
@@ -88,8 +105,8 @@ struct AView: View {
         VStack {
             Text("View A")
 
-            Button("Go to /route/b") {
-                path.push(path: "/route/b", params: ["key2": "value2"])
+            Button("Go to /route/b?key2=value2") {
+                path.push(Route("/route/b", ["key2": "value2"]))
             }
             .buttonStyle(.bordered)
         }
@@ -108,7 +125,7 @@ struct BView: View {
             Text(verbatim: message)
 
             Button("Go to /route/a") {
-                path.push(path: "/route/a")
+                path.push("/route/a")
             }
             .buttonStyle(.bordered)
         }

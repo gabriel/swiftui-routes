@@ -1,39 +1,16 @@
 import Foundation
 import SwiftUI
 
-public typealias RoutePath = [RouteElement]
-
-/// We need a generic wrapper for Routes so we can use a [RouteElement] array for NavigationStack path.
-/// We could use NavigationPath, with mixed types but it doesn't support things like last().
-public enum RouteElement: Hashable, Sendable {
-    case value(Routable)
-    case url(path: String, params: [String: String])
-
-    public func hash(into hasher: inout Hasher) {
-        switch self {
-        case let .value(value):
-            hasher.combine(value.route)
-        case .url(let path, let params):
-            hasher.combine(path)
-            hasher.combine(params)
-        }
-    }
-
-    public static func == (lhs: Self, rhs: Self) -> Bool {
-        switch (lhs, rhs) {
-        case (.value(let lhs), .value(let rhs)):
-            return lhs.route == rhs.route
-        case (.url(let lhsPath, let lhsParams), .url(let rhsPath, let rhsParams)):
-            return lhsPath == rhsPath && lhsParams == rhsParams
-        default:
-            return false
-        }
-    }
-}
+public typealias RoutePath = [Routable]
 
 @preconcurrency
 private struct RoutePathEnvironmentKey: EnvironmentKey {
     static let defaultValue: Binding<RoutePath> = .constant(RoutePath())
+}
+
+@preconcurrency
+private struct RouteSheetEnvironmentKey: EnvironmentKey {
+    static let defaultValue: Binding<Routable?> = .constant(nil)
 }
 
 public extension EnvironmentValues {
@@ -41,19 +18,16 @@ public extension EnvironmentValues {
         get { self[RoutePathEnvironmentKey.self] }
         set { self[RoutePathEnvironmentKey.self] = newValue }
     }
+
+    var routeSheet: Binding<Routable?> {
+        get { self[RouteSheetEnvironmentKey.self] }
+        set { self[RouteSheetEnvironmentKey.self] = newValue }
+    }
 }
 
-public extension [RouteElement] {
-    mutating func push(url: URL) {
-        push(path: url.normalizedPath, params: url.params)
-    }
-
-    mutating func push(path: String, params: [String: String] = [:]) {
-        self.append(RouteElement.url(path: path, params: params))
-    }
-
-    mutating func push(value: Routable) {
-        self.append(RouteElement.value(value))
+public extension [Routable] {
+    mutating func push(_ value: Routable) {
+        self.append(value)
     }
 
     mutating func pop() {
@@ -63,19 +37,9 @@ public extension [RouteElement] {
 }
 
 public extension Binding where Value == RoutePath {
-    func push(url: URL) {
-        push(path: url.normalizedPath, params: url.params)
-    }
-
-    func push(path: String, params: [String: String] = [:]) {
+    func push(_ value: Routable) {
         var newValue = wrappedValue
-        newValue.push(path: path, params: params)
-        wrappedValue = newValue
-    }
-
-    func push(value: Routable) {
-        var newValue = wrappedValue
-        newValue.push(value: value)
+        newValue.push(value)
         wrappedValue = newValue
     }
 

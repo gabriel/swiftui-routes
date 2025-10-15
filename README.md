@@ -99,6 +99,30 @@ MyAlbumRow(album: album)
 
 The modifier can behave like a plain button (`.button()`) or add a tap gesture (`.tap()`), and always pushes by default (`.push()`).
 
+### Present routes in a sheet
+
+Reuse the same registrations with sheets by keeping a `RouteElement?` binding and attaching `routesSheet`. Any `route` modifier can swap to `.sheet()` to present instead of pushing.
+
+```swift
+@State private var sheet: RouteElement?
+
+var body: some View {
+    NavigationStack(path: $path) {
+        HomeView()
+            .routesDestination(routes: routes, path: $path)
+            .routesSheet(routes: routes, item: $sheet, path: $path)
+    }
+}
+
+// Somewhere inside HomeView.
+Button("Album Sheet") {
+    sheet = .url(path: "/album/123")
+}
+
+Text("Featured Album")
+    .route(value: Album(id: "featured"), style: .button(.default).sheet())
+```
+
 ### Render registered destinations manually
 
 `Routes` can also build a view for a registered path or value outside of a navigation stack:

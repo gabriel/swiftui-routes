@@ -1,6 +1,13 @@
 import Foundation
 
-// Instead of forcing route values to be Hashable, make them conform to a Routable route.
 public protocol Routable: Sendable {
     var route: Route { get }
+}
+
+extension String: Routable {
+    public var route: Route { .init(self) }
+}
+
+extension URL: Routable {
+    public var route: Route { .init(url: self) }
 }
