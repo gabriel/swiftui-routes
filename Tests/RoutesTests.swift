@@ -30,19 +30,22 @@ struct SwiftUIRoutesTests {
 
         assertRender(view: view, device: .any)
 
-        let stack = NavigationStack(path: routes.path) {
-            VStack { Text("Content") }.routesDestination(routes)
+        var path = RoutePath()
+        let pathBinding = Binding(get: { path }, set: { path = $0 })
+
+        let stack = NavigationStack(path: pathBinding) {
+            VStack { Text("Content") }.routesDestination(routes: routes, path: pathBinding)
         }
 
-        routes.push(value: value)
+        path.push(value: value)
 
         assertSnapshot(view: stack, device: .any)
     }
 
     @Test
     func testRouteValueClass() throws {
-        class SomeClass: Routable {
-            var text: String
+        final class SomeClass: Routable, Sendable {
+            let text: String
 
             init(text: String) {
                 self.text = text
@@ -77,11 +80,14 @@ struct SwiftUIRoutesTests {
 
         assertRender(view: attributedStringView, device: .any)
 
-        let stack = NavigationStack(path: routes.path) {
-            VStack { Text("Content") }.routesDestination(routes)
+        var path = RoutePath()
+        let pathBinding = Binding(get: { path }, set: { path = $0 })
+
+        let stack = NavigationStack(path: pathBinding) {
+            VStack { Text("Content") }.routesDestination(routes: routes, path: pathBinding)
         }
 
-        routes.push(value: value)
+        pathBinding.push(value: value)
 
         assertSnapshot(view: stack, device: .any)
     }
@@ -102,6 +108,24 @@ struct SwiftUIRoutesTests {
     }
 
     @Test
+    func testRouteWithParams() throws {
+        let routes = Routes()
+        var capturedRoute: Route?
+
+        routes.register(path: "/route-b") { route in
+            capturedRoute = route
+            return Text(route.param("key1") ?? "Missing value")
+                .font(.headline)
+        }
+
+        let value = Route("/route-b", ["key1": "value1"])
+        let view = routes.view(value)
+
+        assertRender(view: view, device: .any)
+        #expect(capturedRoute?.param("key1") == "value1")
+    }
+
+    @Test
     func testRouteStack() throws {
         let routes = Routes()
         routes.register(path: "/route-a") { _ in
@@ -111,13 +135,16 @@ struct SwiftUIRoutesTests {
                 .background(.red)
         }
 
-        let view = NavigationStack(path: routes.path) {
+        var path = RoutePath()
+        let pathBinding = Binding(get: { path }, set: { path = $0 })
+
+        let view = NavigationStack(path: pathBinding) {
             VStack {
                 Text("Testing")
                     .foregroundColor(.blue)
                     .background(.red)
                 Button("Go to /route-a") {
-                    routes.push(path: "/route-a")
+                    path.push(path: "/route-a")
                 }
                 .buttonStyle(.borderedProminent)
             }
@@ -125,4 +152,8 @@ struct SwiftUIRoutesTests {
 
         assertSnapshot(view: view, device: .size(300, 300))
     }
+}
+
+extension AttributedString: Routable {
+    public var route: Route { "/attributed-string" }
 }

@@ -34,16 +34,18 @@ public final class Routes {
     }
 
     @ViewBuilder
-    public func view(route: RouteElement) -> some View {
-        switch route {
-        case let .url(path, params):
-            view(path: path, params: params)
-        case .value(let value):
-            view(value)
+    public func view(_ routable: Routable) -> some View {
+        let resolved = (routable as? AnyRoutable)?.base ?? routable
+
+        if resolved is String || resolved is URL || resolved is Route {
+            let route = resolved.route
+            view(path: route.path, params: route.params)
+        } else {
+            view(value: resolved)
         }
     }
 
-    public func view(_ value: Any) -> AnyView {
+    func view(value: Any) -> AnyView {
         let id = ObjectIdentifier(type(of: value))
         guard let builder = objects[id] else {
             return AnyView(Text("SwiftUIRoutes: No destination registered for \(String(describing: type(of: value)))"))
@@ -52,12 +54,12 @@ public final class Routes {
     }
 
     @ViewBuilder
-    public func view(path: String, params: [String: String] = [:]) -> some View {
+    func view(path: String, params: [String: String] = [:]) -> some View {
         if let builder = exactPaths[path] {
-            builder(Route(path: path, params: params))
+            builder(Route(path, params))
         } else {
             if let (matchedBuilder, combinedParams) = matchParameterizedPath(path: path, params: params) {
-                matchedBuilder(Route(path: path, params: combinedParams))
+                matchedBuilder(Route(path, combinedParams))
             } else {
                 let registeredPaths = (Array(exactPaths.keys) + parameterizedPaths.map(\.pattern)).sorted()
 
@@ -118,14 +120,6 @@ public final class Routes {
     }
 }
 
-public extension View {
-    func routesDestination(routes: Routes, path: Binding<RoutePath>) -> some View {
-        navigationDestination(for: RouteElement.self) { route in
-            routes.view(route: route)                
-        }
-        .environment(\.routePath, path)
-    }
-}
 
 private extension Routes {
     func store(path: String, builder: @escaping (Route) -> AnyView) {

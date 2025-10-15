@@ -1,44 +1,12 @@
 import SwiftUI
 
 public extension View {
-    func route(path: String, params: [String: String] = [:], style: RouteStyle = .button(.plain).push(), completion: (() -> Void)? = nil) -> some View {
-        modifier(RoutePushPathModifier(path: path, params: params, style: style, completion: completion))
+    func push(_ routable: Routable, style: RouteButtonType = .button(.plain), completion: (() -> Void)? = nil) -> some View {
+        modifier(RouteModifier(routable: routable, action: .stack, style: style, completion: completion))
     }
 
-    func route(value: Routable, style: RouteStyle = .button(.plain).push(), completion: (() -> Void)? = nil) -> some View {
-        modifier(RoutePushValueModifier(value: value, style: style, completion: completion))
-    }
-}
-
-public struct RouteStyle {
-    private let _button: RouteButtonType
-    private let _action: RouteActionType
-
-    public var buttonType: RouteButtonType { _button }
-    public var actionType: RouteActionType { _action }
-
-    public func push() -> RouteStyle {
-        .init(_button: _button, _action: .push)
-    }
-
-    public func button(_ style: RouteButtonStyle = .plain) -> RouteStyle {
-        .init(_button: .button(style), _action: _action)
-    }
-
-    public func tap() -> RouteStyle {
-        .init(_button: .tap, _action: _action)
-    }
-
-    public static func button(_ style: RouteButtonStyle = .plain) -> RouteStyle {
-        .init(_button: .button(style), _action: .push)
-    }
-
-    public static func tap() -> RouteStyle {
-        .init(_button: .tap, _action: .push)
-    }
-
-    public static func push() -> RouteStyle {
-        .init(_button: .button(.plain), _action: .push)
+    func sheet(_ routable: Routable, style: RouteButtonType = .button(.plain), completion: (() -> Void)? = nil) -> some View {
+        modifier(RouteModifier(routable: routable, action: .sheet, style: style, completion: completion))
     }
 }
 
@@ -52,78 +20,32 @@ public enum RouteButtonStyle {
     case `default`
 }
 
-public enum RouteActionType {
-    case push
-
+enum RouteAction {
+    case stack
+    case sheet
 }
 
-private struct RoutePushPathModifier: ViewModifier {
+private struct RouteModifier: ViewModifier {
     @Environment(\.routePath) var routePath
+    @Environment(\.routeSheet) var routeSheet
 
-    let path: String
-    let params: [String: String]
-    let style: RouteStyle
+    let routable: Routable
+    let action: RouteAction
+    let style: RouteButtonType
     var completion: (() -> Void)? = nil
 
     func internalAction() {
-        switch style.actionType {
-        case .push:
-            routePath.push(path: path, params: params)
+        switch action {
+        case .stack:
+            routePath.push(routable)
+        case .sheet:
+            routeSheet.wrappedValue = routable
         }
     }
 
     func body(content: Content) -> some View {
         // Copied
-        switch style.buttonType {
-        case let .button(style):
-            switch style {
-            case .plain:
-                Button {
-                    internalAction()
-                    completion?()
-                } label: {
-                    content
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-            case .default:
-                Button {
-                    internalAction()
-                    completion?()
-                } label: {
-                    content
-                        .contentShape(Rectangle())
-                }
-            }
-        case .tap:
-            content
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    internalAction()
-                    completion?()
-                }
-                .accessibilityAddTraits(.isButton)
-        }
-    }
-}
-
-private struct RoutePushValueModifier: ViewModifier {
-    @Environment(\.routePath) var routePath
-
-    let value: Routable
-    let style: RouteStyle
-    var completion: (() -> Void)? = nil
-
-    func internalAction() {
-        switch style.actionType {
-        case .push:
-            routePath.push(value: value)
-        }
-    }
-
-    func body(content: Content) -> some View {
-        // Copied
-        switch style.buttonType {
+        switch style {
         case let .button(style):
             switch style {
             case .plain:
