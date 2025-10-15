@@ -71,11 +71,11 @@ struct HomeView: View {
     var body: some View {
         VStack(spacing: 24) {
             Button("Album (123)") {
-                path.push(path: "/album/123")
+                path.push("/album/123")
             }
 
             Button("Featured Album") {
-                path.push(value: Album(id: "featured"))
+                path.push(Album(id: "featured"))
             }
 
             Text("Tap to open Latest")
@@ -165,7 +165,7 @@ dependencies: [
 
 ## Multiple packages
 
-Share a single `Routes` instance across packages without creating cyclical dependencies by letting each package contribute its own registrations. The app (or shell target) owns the `Routes` instance and passes it to package-level helpers.
+Share a single `Routes` instance across packages without creating cyclical dependencies by letting each package contribute its own registrations. The app owns the `Routes` instance and passes it to package-level helpers that fill in the routes it knows about.
 
 ```swift
 import PackageA
@@ -186,19 +186,19 @@ public struct ExampleView: View {
         NavigationStack(path: $path) {
             List {
                 Button("Package A (Type)") {
-                    path.push(value: PackageA.Value(text: "Hello World!"))
+                    path.push(PackageA.Value(text: "Hello World!"))
                 }
 
                 Button("Package A (Path)") {
-                    path.push(path: "/package-a/value", params: ["text": "Hello!"])
+                    path.push("/package-a/value", params: ["text": "Hello!"])
                 }
 
                 Button("Package B (Type)") {
-                    path.push(value: PackageB.Value(systemImage: "heart.fill"))
+                    path.push(PackageB.Value(systemImage: "heart.fill"))
                 }
 
                 Button("Package B (Path)") {
-                    path.push(path: "/package-b/value", params: ["systemName": "heart"])
+                    path.push("/package-b/value", params: ["systemName": "heart"])
                 }
             }
             .routesDestination(routes: routes, path: $path)
