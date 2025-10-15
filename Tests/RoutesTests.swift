@@ -31,7 +31,7 @@ struct SwiftUIRoutesTests {
         assertRender(view: view, device: .any)
 
         var path = RoutePath()
-        var pathBinding = Binding(get: { path }, set: { path = $0 })
+        let pathBinding = Binding(get: { path }, set: { path = $0 })
 
         let stack = NavigationStack(path: pathBinding) {
             VStack { Text("Content") }.routesDestination(routes: routes, path: pathBinding)
@@ -81,7 +81,7 @@ struct SwiftUIRoutesTests {
         assertRender(view: attributedStringView, device: .any)
 
         var path = RoutePath()
-        var pathBinding = Binding(get: { path }, set: { path = $0 })
+        let pathBinding = Binding(get: { path }, set: { path = $0 })
 
         let stack = NavigationStack(path: pathBinding) {
             VStack { Text("Content") }.routesDestination(routes: routes, path: pathBinding)
@@ -118,7 +118,7 @@ struct SwiftUIRoutesTests {
         }
 
         var path = RoutePath()
-        var pathBinding = Binding(get: { path }, set: { path = $0 })
+        let pathBinding = Binding(get: { path }, set: { path = $0 })
 
         let view = NavigationStack(path: pathBinding) {
             VStack {
@@ -134,4 +134,8 @@ struct SwiftUIRoutesTests {
 
         assertSnapshot(view: view, device: .size(300, 300))
     }
+}
+
+extension AttributedString: Routable {
+    public var route: Route { "/attributed-string" }
 }

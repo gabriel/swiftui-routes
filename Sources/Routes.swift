@@ -34,12 +34,14 @@ public final class Routes {
     }
 
     @ViewBuilder
-    public func view(routable: Routable) -> some View {
-        if routable is String || routable is URL {
-            let route = routable.route
+    public func view(_ routable: Routable) -> some View {
+        let resolved = (routable as? AnyRoutable)?.base ?? routable
+
+        if resolved is String || resolved is URL {
+            let route = resolved.route
             view(path: route.path, params: route.params)
         } else {
-            view(value: routable)
+            view(value: resolved)
         }
     }
 

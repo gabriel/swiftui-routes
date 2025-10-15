@@ -1,13 +1,6 @@
 import SwiftUI
 
 public extension View {
-    func routesDestination(routes: Routes, path: Binding<RoutePath>) -> some View {
-        navigationDestination(for: Routable.self) { route in
-            routes.view(routable: route)
-        }
-        .environment(\.routePath, path)
-    }
-
     func routesSheet(routes: Routes, item: Binding<Routable?>, path: Binding<RoutePath>? = nil, onDismiss: (() -> Void)? = nil) -> some View {
         modifier(RoutesSheetModifier(routes: routes, item: item, path: path, onDismiss: onDismiss))
     }
@@ -23,10 +16,18 @@ private struct RoutesSheetModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         let activePath = path ?? inheritedPath
+        let sheetItem = Binding<AnyRoutable?>(
+            get: {
+                item.wrappedValue.map(AnyRoutable.init)
+            },
+            set: { newValue in
+                item.wrappedValue = newValue?.base
+            }
+        )
 
         content
-            .sheet(item: item, onDismiss: onDismiss) { route in
-                routes.view(routable: route)
+            .sheet(item: sheetItem, onDismiss: onDismiss) { route in
+                routes.view(route.base)
                     .environment(\.routePath, activePath)
                     .environment(\.routeSheet, item)
             }
