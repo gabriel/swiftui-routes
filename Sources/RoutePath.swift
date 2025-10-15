@@ -43,7 +43,7 @@ public extension EnvironmentValues {
     }
 }
 
-public extension RoutePath {
+public extension [RouteElement] {
     mutating func push(url: URL) {
         push(path: url.normalizedPath, params: url.params)
     }
@@ -59,31 +59,5 @@ public extension RoutePath {
     mutating func pop() {
         guard !isEmpty else { return }
         self.removeLast()
-    }
-}
-
-public extension Binding where Value == RoutePath {
-    func push(url: URL) {
-        var value = wrappedValue
-        value.push(url: url)
-        wrappedValue = value
-    }
-
-    func push(path: String, params: [String: String] = [:]) {
-        var value = wrappedValue
-        value.push(path: path, params: params)
-        wrappedValue = value
-    }
-
-    func push(value: Routable) {
-        var current = wrappedValue
-        current.push(value: value)
-        wrappedValue = current
-    }
-
-    func pop() {
-        var value = wrappedValue
-        value.pop()
-        wrappedValue = value
     }
 }
