@@ -108,6 +108,24 @@ struct SwiftUIRoutesTests {
     }
 
     @Test
+    func testRouteWithParams() throws {
+        let routes = Routes()
+        var capturedRoute: Route?
+
+        routes.register(path: "/route-b") { route in
+            capturedRoute = route
+            return Text(route.param("key1") ?? "Missing value")
+                .font(.headline)
+        }
+
+        let value = Route("/route-b", ["key1": "value1"])
+        let view = routes.view(value)
+
+        assertRender(view: view, device: .any)
+        #expect(capturedRoute?.param("key1") == "value1")
+    }
+
+    @Test
     func testRouteStack() throws {
         let routes = Routes()
         routes.register(path: "/route-a") { _ in

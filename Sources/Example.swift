@@ -37,47 +37,50 @@ struct NavigationStackExample: View {
         NavigationStack(path: $path) {
             ScrollView {
                 VStack(spacing: 20) {
-                    Text("Button")
+                    Text("Push (Button)")
                         .font(.title)
 
-                    Button("Go to /route/a") {
+                    Button("Push /route/a") {
                         path.push("/route/a")
                     }
                     .buttonStyle(.borderedProminent)
 
-                    Button("Go to /route/a (value)") {
+                    Button("Push /route/a (value)") {
                         path.push(RouteA())
                     }
                     .buttonStyle(.bordered)
 
-                    Button("Go to /route/b?key1=value1") {
+                    Button("Push /route/b?key1=value1") {
                         path.push(Route("/route/b", ["key1": "value1"]))
                     }
                     .buttonStyle(.borderedProminent)
 
-                    Button("Go to /route/b (value)") {
+                    Button("Push /route/b (value)") {
                         path.push(RouteB(message: "Hi!"))
                     }
                     .buttonStyle(.bordered)
 
                     Divider()
 
-                    Text(".stack")
+                    Text("Push (Modifier)")
                         .font(.title)
 
-                    Text("Go to /route/a")
-                        .stack("/route/a")
+                    Text("Push /route/a (plain)")
+                        .push("/route/a")
 
-                    Text("Go to /route/a")
-                        .stack("/route/a", style: .button(.default))
+                    Text("Push /route/a (button)")
+                        .push("/route/a", style: .button(.default))
 
-                    Text("Go to /route/a")
-                        .stack("/route/a", style: .button(.default))
-                        .buttonStyle(.borderedProminent)
+                    Text("Push /route/a (bordered)")
+                        .push("/route/a", style: .button(.default))
+                        .buttonStyle(.bordered)
+
+                    Text("Push /route/a (tap)")
+                        .push("/route/a", style: .tap)
 
                     Divider()
 
-                    Text(".sheet")
+                    Text("Sheet")
                         .font(.title)
 
                     Button("Present /route/a") {
@@ -87,8 +90,6 @@ struct NavigationStackExample: View {
 
                     Text("Present /route/b?key3=value3")
                         .sheet(Route("/route/b", ["key3": "value3"]), style: .button(.default))
-                        .buttonStyle(.borderedProminent)
-                        .padding(.horizontal)
                 }
 
             }

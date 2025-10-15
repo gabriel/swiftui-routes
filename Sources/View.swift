@@ -1,7 +1,7 @@
 import SwiftUI
 
 public extension View {
-    func stack(_ routable: Routable, style: RouteButtonType = .button(.plain), completion: (() -> Void)? = nil) -> some View {
+    func push(_ routable: Routable, style: RouteButtonType = .button(.plain), completion: (() -> Void)? = nil) -> some View {
         modifier(RouteModifier(routable: routable, action: .stack, style: style, completion: completion))
     }
 
