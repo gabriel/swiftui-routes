@@ -61,3 +61,28 @@ public extension [RouteElement] {
         self.removeLast()
     }
 }
+
+public extension Binding where Value == RoutePath {
+    func push(url: URL) {
+        push(path: url.normalizedPath, params: url.params)
+    }
+
+    func push(path: String, params: [String: String] = [:]) {
+        var newValue = wrappedValue
+        newValue.push(path: path, params: params)
+        wrappedValue = newValue
+    }
+
+    func push(value: Routable) {
+        var newValue = wrappedValue
+        newValue.push(value: value)
+        wrappedValue = newValue
+    }
+
+    func pop() {
+        guard !wrappedValue.isEmpty else { return }
+        var newValue = wrappedValue
+        newValue.pop()
+        wrappedValue = newValue
+    }
+}

@@ -1,11 +1,11 @@
 import SwiftUI
 
 public extension View {
-    func route(path: String, params: [String: String] = [:], style: RouteStyle = .button().push(), completion: (() -> Void)? = nil) -> some View {
+    func route(path: String, params: [String: String] = [:], style: RouteStyle = .button(.plain).push(), completion: (() -> Void)? = nil) -> some View {
         modifier(RoutePushPathModifier(path: path, params: params, style: style, completion: completion))
     }
 
-    func route(value: Routable, style: RouteStyle = .button().push(), completion: (() -> Void)? = nil) -> some View {
+    func route(value: Routable, style: RouteStyle = .button(.plain).push(), completion: (() -> Void)? = nil) -> some View {
         modifier(RoutePushValueModifier(value: value, style: style, completion: completion))
     }
 }
@@ -21,16 +21,16 @@ public struct RouteStyle {
         .init(_button: _button, _action: .push)
     }
 
-    public func button() -> RouteStyle {
-        .init(_button: .button, _action: _action)
+    public func button(_ style: RouteButtonStyle = .plain) -> RouteStyle {
+        .init(_button: .button(style), _action: _action)
     }
 
     public func tap() -> RouteStyle {
         .init(_button: .tap, _action: _action)
     }
 
-    public static func button() -> RouteStyle {
-        .init(_button: .button, _action: .push)
+    public static func button(_ style: RouteButtonStyle = .plain) -> RouteStyle {
+        .init(_button: .button(style), _action: .push)
     }
 
     public static func tap() -> RouteStyle {
@@ -38,13 +38,18 @@ public struct RouteStyle {
     }
 
     public static func push() -> RouteStyle {
-        .init(_button: .button, _action: .push)
+        .init(_button: .button(.plain), _action: .push)
     }
 }
 
 public enum RouteButtonType {
     case tap
-    case button
+    case button(RouteButtonStyle)
+}
+
+public enum RouteButtonStyle {
+    case plain
+    case `default`
 }
 
 public enum RouteActionType {
@@ -68,17 +73,28 @@ private struct RoutePushPathModifier: ViewModifier {
     }
 
     func body(content: Content) -> some View {
-        // Copied below
+        // Copied
         switch style.buttonType {
-        case .button:
-            Button {
-                internalAction()
-                completion?()
-            } label: {
-                content
-                    .contentShape(Rectangle())
+        case let .button(style):
+            switch style {
+            case .plain:
+                Button {
+                    internalAction()
+                    completion?()
+                } label: {
+                    content
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            case .default:
+                Button {
+                    internalAction()
+                    completion?()
+                } label: {
+                    content
+                        .contentShape(Rectangle())
+                }
             }
-            .buttonStyle(.plain)
         case .tap:
             content
                 .contentShape(Rectangle())
@@ -106,17 +122,28 @@ private struct RoutePushValueModifier: ViewModifier {
     }
 
     func body(content: Content) -> some View {
-        // Copied above
+        // Copied
         switch style.buttonType {
-        case .button:
-            Button {
-                internalAction()
-                completion?()
-            } label: {
-                content
-                    .contentShape(Rectangle())
+        case let .button(style):
+            switch style {
+            case .plain:
+                Button {
+                    internalAction()
+                    completion?()
+                } label: {
+                    content
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            case .default:
+                Button {
+                    internalAction()
+                    completion?()
+                } label: {
+                    content
+                        .contentShape(Rectangle())
+                }
             }
-            .buttonStyle(.plain)
         case .tap:
             content
                 .contentShape(Rectangle())

@@ -121,9 +121,9 @@ public final class Routes {
 public extension View {
     func routesDestination(routes: Routes, path: Binding<RoutePath>) -> some View {
         navigationDestination(for: RouteElement.self) { route in
-            routes.view(route: route)
-                .environment(\.routePath, path)
+            routes.view(route: route)                
         }
+        .environment(\.routePath, path)
     }
 }
 

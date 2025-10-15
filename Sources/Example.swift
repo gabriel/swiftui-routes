@@ -34,8 +34,8 @@ struct NavigationStackExample: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            VStack {
-                Text("Routes Example")
+            VStack(spacing: 20) {
+                Text("Button")
                     .font(.title)
 
                 Button("Go to /route/a") {
@@ -57,7 +57,25 @@ struct NavigationStackExample: View {
                     path.push(value: RouteB(message: "Hi!"))
                 }
                 .buttonStyle(.bordered)
+
+                Divider()
+
+                Text(".route()")
+                    .font(.title)
+
+                Text("Go to /route/a")
+                    .route(path: "/route/a")
+
+                Text("Go to /route/a")
+                    .route(path: "/route/a", style: .button(.default))
+
+                Text("Go to /route/a")
+                    .route(path: "/route/a", style: .button(.default))
+                    .buttonStyle(.borderedProminent)
+
+
             }
+            //.environment(\.routePath, $path)
             .routesDestination(routes: routes, path: $path)
         }
     }
