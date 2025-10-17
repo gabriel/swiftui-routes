@@ -2,21 +2,36 @@
 
 SwiftUI Routes centralizes navigation destinations so you can describe navigation by path strings or strongly typed values.
 
+## Example Project
+
+Explore `Examples/MusicApp` for a complete sample integrating SwiftUI Routes; open `Examples/MusicApp/MusicApp.xcodeproj` in Xcode to run it.
+
 ## Register
 
-Start by creating a `Routes` instance and registering destinations. Registrations accept either a resource path (string) or a `Routable` value. Paths can be parameterized to include params (like `id`).
+Start by creating a `Routes.swift` file and registering destinations. Registrations accept either a resource path (string) or a `Routable` value. Paths can be parameterized to include params (like `id`).
 
 ```swift
-let routes = Routes()
+import SwiftUIRoutes
 
-routes.register(path: "/album/:id") { route in
-    AlbumView(id: route.param("id") ?? "unknown")
+@MainActor
+var routes: Routes {
+    let routes = Routes()
+    register(routes: routes)
+    return routes
 }
 
-routes.register(type: Album.self) { album in
-    AlbumDetailView(album: album)
+@MainActor
+private func register(routes: Routes) {
+    routes.register(path: "/album/:id") { route in
+        if let id = route.param("id") {
+            AlbumView(id: id)
+        }
+    }
+
+    routes.register(type: Album.self) { album in
+        AlbumDetailView(album: album)
+    }
 }
-```
 
 - Path registrations use URL-style patterns. The closure receives a `Route` so you can pull out parameters or query items with `route.param(_:)` or `route.params`.
 - Type registrations work with any `Routable`. Conforming types define how to turn a value into the resource path that should be presented.
@@ -52,7 +67,7 @@ struct LookupExample: View {
 
 ## NavigationStack
 
-Attach your routes to a `NavigationStack` by keeping a `RoutePath` binding. The modifier installs every registered destination and exposes the binding through `EnvironmentValues.routePath`.
+Attach your routes to a `NavigationStack` by keeping a `RoutePath` binding. The modifier installs every registered destination and exposes the binding through `EnvironmentValues.routePath`. Define `routesDestination` on the root view.
 
 ```swift
 struct AppScene: View {
@@ -69,17 +84,6 @@ struct AppScene: View {
                 .routesDestination(routes: routes, path: $path)
         }
     }    
-}
-
-// Expose routes registration in your package (optional)
-public func register(routes: Routes) {
-    routes.register(path: "/album/:id") { route in
-        AlbumView(id: route.param("id") ?? "unknown")
-    }
-
-    routes.register(type: Album.self) { album in
-        AlbumDetailView(album: album)
-    }
 }
 ```
 
@@ -110,53 +114,22 @@ The `push(_:style:)` modifier wraps any view in a navigation trigger while still
 
 ## Sheets
 
-Reuse the same routes for modal sheets by keeping a `Routable?` binding and attaching `routesSheet`.
-
-```swift
-struct ContentView: View {
-    private let routes = Routes()
-    @State private var path = RoutePath()
-    @State private var sheet: Routable?
-
-    init() {
-        register(routes: routes)
-    }
-
-    var body: some View {
-        NavigationStack(path: $path) {
-            HomeView()
-                .routesDestination(routes: routes, path: $path)
-                .routesSheet(routes: routes, item: $sheet, path: $path)
-        }
-    }
-}
-
- func register(routes: Routes) {
-    routes.register(path: "/album/:id") { route in
-        AlbumView(id: route.param("id") ?? "unknown")
-    }
-
-    routes.register(type: Album.self) { album in
-        AlbumDetailView(album: album)
-    }
-}
-```
-
-When `routesSheet` is present you can present any registered destination with the same APIs used for stacks.
+Define a sheet binding and use `routeSheet`. If `stacked` is `true`, it will wrap the route view in another NavigationStack in case those views push.
 
 ```swift
 struct HomeView: View {
-    @Environment(\.routeSheet) private var sheet
+    @State private var sheet: Routable?
+    
+    let album: Album
 
     var body: some View {
         VStack(spacing: 24) {
-            Button("Preview Album") {
-                sheet.wrappedValue = Route("/album/123")
+            Button("Open Album") {
+                sheet = album
             }
-
-            Text("Show Album")
-                .sheet(Album(id: "123"))
         }
+        // If stacked is true will wrap in a new NavigationStack configured with these routes
+        .routeSheet(routes: routes, item: $sheet, stacked: true) 
     }
 }
 ```
