@@ -51,12 +51,6 @@ Use `Routes.view(_:)` to render a destination directly from a registered path or
 
 ```swift
 struct LookupExample: View {
-    private let routes = Routes()
-
-    init() {
-        register(routes: routes)
-    }
-
     var body: some View {
         VStack(spacing: 16) {
             routes.view("/album/123")
