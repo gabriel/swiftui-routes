@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Route: Sendable, Hashable, ExpressibleByStringLiteral, Routable {
+public struct Route: Sendable, Hashable, ExpressibleByStringLiteral, Routable, Codable {
     public let path: String
     public let params: [String: String]
 
