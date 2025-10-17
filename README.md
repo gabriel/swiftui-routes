@@ -2,9 +2,9 @@
 
 SwiftUI Routes centralizes navigation destinations so you can describe navigation by path strings or strongly typed values.
 
-## Register routes
+## Register
 
-Start by creating a `Routes` instance and registering destinations. Registrations accept either a resource path (string) or a `Routable` value.
+Start by creating a `Routes` instance and registering destinations. Registrations accept either a resource path (string) or a `Routable` value. Paths can be parameterized to include params (like `id`).
 
 ```swift
 let routes = Routes()
@@ -26,6 +26,27 @@ struct Album: Routable {
     var id: String
 
     var route: Route { Route("/album/\(id)") }
+}
+```
+
+## Lookup
+
+Use `Routes.view(_:)` to render a destination directly from a registered path or type.
+
+```swift
+struct LookupExample: View {
+    private let routes = Routes()
+
+    init() {
+        register(routes: routes)
+    }
+
+    var body: some View {
+        VStack(spacing: 16) {
+            routes.view("/album/123")
+            routes.view(Album(id: "featured"))
+        }
+    }
 }
 ```
 
