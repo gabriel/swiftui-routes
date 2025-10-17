@@ -43,7 +43,7 @@ enum AlbumStore {
         )
     ]
 
-    static func album(withID id: String) -> Album? {
+    static func album(id: String) -> Album? {
         library.first { $0.id == id }
     }
 }

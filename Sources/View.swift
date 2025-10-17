@@ -2,11 +2,7 @@ import SwiftUI
 
 public extension View {
     func push(_ routable: Routable, style: RouteButtonType = .button(.plain), completion: (() -> Void)? = nil) -> some View {
-        modifier(RouteModifier(routable: routable, action: .stack, style: style, completion: completion))
-    }
-
-    func sheet(_ routable: Routable, style: RouteButtonType = .button(.plain), completion: (() -> Void)? = nil) -> some View {
-        modifier(RouteModifier(routable: routable, action: .sheet, style: style, completion: completion))
+        modifier(RouteModifier(routable: routable, style: style, completion: completion))
     }
 }
 
@@ -20,28 +16,12 @@ public enum RouteButtonStyle {
     case `default`
 }
 
-enum RouteAction {
-    case stack
-    case sheet
-}
-
 private struct RouteModifier: ViewModifier {
     @Environment(\.routePath) var routePath
-    @Environment(\.routeSheet) var routeSheet
 
     let routable: Routable
-    let action: RouteAction
     let style: RouteButtonType
     var completion: (() -> Void)? = nil
-
-    func internalAction() {
-        switch action {
-        case .stack:
-            routePath.push(routable)
-        case .sheet:
-            routeSheet.wrappedValue = routable
-        }
-    }
 
     func body(content: Content) -> some View {
         // Copied
@@ -50,7 +30,7 @@ private struct RouteModifier: ViewModifier {
             switch style {
             case .plain:
                 Button {
-                    internalAction()
+                    routePath.push(routable)
                     completion?()
                 } label: {
                     content
@@ -59,7 +39,7 @@ private struct RouteModifier: ViewModifier {
                 .buttonStyle(.plain)
             case .default:
                 Button {
-                    internalAction()
+                    routePath.push(routable)
                     completion?()
                 } label: {
                     content
@@ -70,7 +50,7 @@ private struct RouteModifier: ViewModifier {
             content
                 .contentShape(Rectangle())
                 .onTapGesture {
-                    internalAction()
+                    routePath.push(routable)
                     completion?()
                 }
                 .accessibilityAddTraits(.isButton)

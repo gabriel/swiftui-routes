@@ -7,8 +7,9 @@ public extension View {
     func routesDestination(routes: Routes, path: Binding<RoutePath>) -> some View {
         navigationDestination(for: AnyRoutable.self) { route in
             routes.view(route)
+                .environment(\.routePath, path) // Add to hierarchy for any new views
         }
-        .environment(\.routePath, path)
+        .environment(\.routePath, path) // Add for root view hierarchy
     }
 }
 
@@ -26,11 +27,6 @@ public extension EnvironmentValues {
     var routePath: Binding<RoutePath> {
         get { self[RoutePathEnvironmentKey.self] }
         set { self[RoutePathEnvironmentKey.self] = newValue }
-    }
-
-    var routeSheet: Binding<Routable?> {
-        get { self[RouteSheetEnvironmentKey.self] }
-        set { self[RouteSheetEnvironmentKey.self] = newValue }
     }
 }
 

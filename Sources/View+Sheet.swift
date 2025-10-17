@@ -1,21 +1,18 @@
 import SwiftUI
 
 public extension View {
-    func routesSheet(routes: Routes, item: Binding<Routable?>, path: Binding<RoutePath>? = nil, onDismiss: (() -> Void)? = nil) -> some View {
-        modifier(RoutesSheetModifier(routes: routes, item: item, path: path, onDismiss: onDismiss))
+    func routeSheet(routes: Routes, item: Binding<Routable?>, stacked: Bool = false, onDismiss: (() -> Void)? = nil) -> some View {
+        modifier(RouteSheetModifier(routes: routes, item: item, stacked: stacked, onDismiss: onDismiss))
     }
 }
 
-private struct RoutesSheetModifier: ViewModifier {
-    @Environment(\.routePath) private var inheritedPath
-
+private struct RouteSheetModifier: ViewModifier {
     let routes: Routes
     let item: Binding<Routable?>
-    let path: Binding<RoutePath>?
+    let stacked: Bool
     let onDismiss: (() -> Void)?
 
     func body(content: Content) -> some View {
-        let activePath = path ?? inheritedPath
         let sheetItem = Binding<AnyRoutable?>(
             get: {
                 item.wrappedValue.map(AnyRoutable.init)
@@ -27,10 +24,13 @@ private struct RoutesSheetModifier: ViewModifier {
 
         content
             .sheet(item: sheetItem, onDismiss: onDismiss) { route in
-                routes.view(route.base)
-                    .environment(\.routePath, activePath)
-                    .environment(\.routeSheet, item)
+                if stacked {
+                    RouteStack(routes: routes) {
+                        routes.view(route.base)
+                    }
+                } else {
+                    routes.view(route.base)
+                }
             }
-            .environment(\.routeSheet, item)
     }
 }

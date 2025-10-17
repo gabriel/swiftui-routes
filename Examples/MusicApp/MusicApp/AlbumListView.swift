@@ -3,9 +3,10 @@ import SwiftUIRoutes
 
 struct AlbumListView: View {
     @Environment(\.routePath) private var routePath
-    @Environment(\.routeSheet) private var routeSheet
 
     private let albums = AlbumStore.library
+
+    @State var sheet: Routable?
 
     var body: some View {
         List {
@@ -33,7 +34,7 @@ struct AlbumListView: View {
 
                 Button {
                     if let second = albums.dropFirst().first {
-                        routeSheet.wrappedValue = second
+                        sheet = second
                     }
                 } label: {
                     Label("Preview second album", systemImage: "rectangle.portrait.and.arrow.right")
@@ -55,11 +56,12 @@ struct AlbumListView: View {
             }
         }
         .navigationTitle("Albums")
+        .routeSheet(routes: routes, item: $sheet, stacked: true)
     }
 }
 
 #Preview {
-    NavigationStack {
+    RouteStack(routes: routes) {
         AlbumListView()
     }
 }

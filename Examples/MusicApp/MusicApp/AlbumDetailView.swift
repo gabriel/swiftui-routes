@@ -4,7 +4,8 @@ import SwiftUIRoutes
 struct AlbumDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.routePath) private var routePath
-    @Environment(\.routeSheet) private var routeSheet
+
+    @State var sheet: Routable?
 
     let album: Album
 
@@ -72,10 +73,11 @@ struct AlbumDetailView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button("Preview") {
-                    routeSheet.wrappedValue = album
+                    sheet = album
                 }
             }
         }
+        .routeSheetStack(routes: routes, item: $sheet)
     }
 }
 
