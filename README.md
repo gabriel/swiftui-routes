@@ -162,36 +162,37 @@ import PackageB
 import SwiftUI
 import SwiftUIRoutes
 
-public struct ExampleView: View {
-    private let routes = Routes()
-    @State private var path = RoutePath()
+@MainActor
+var routes: Routes {
+    let routes = Routes()
+    PackageA.register(routes: routes)
+    PackageB.register(routes: routes)
+    return routes
+}
+```
 
-    public init() {
-        PackageA.register(routes: routes)
-        PackageB.register(routes: routes)
-    }
+In PackageC:
+
+```swift
+import SwiftUI
+import SwiftUIRoutes
+
+public struct ExampleView: View {
+    let routes: Routes
+    @State private var path = RoutePath()
 
     public var body: some View {
         NavigationStack(path: $path) {
             List {
-                Button("Package A (Type)") {
-                    path.push(PackageA.Value(text: "Hello World!"))
+                Button("A view in PackageA") {
+                    path.push("/a/1", params: ["text": "Hello!"])
                 }
 
-                Button("Package A (Path)") {
-                    path.push("/package-a/value", params: ["text": "Hello!"])
-                }
-
-                Button("Package B (Type)") {
-                    path.push(PackageB.Value(systemImage: "heart.fill"))
-                }
-
-                Button("Package B (Path)") {
-                    path.push("/package-b/value", params: ["systemName": "heart"])
+                Button("A view in PackageB") {
+                    path.push("/b/2", params: ["systemName": "heart"])
                 }
             }
             .routesDestination(routes: routes, path: $path)
-            .navigationTitle("Example")
         }
     }
 }
@@ -199,19 +200,30 @@ public struct ExampleView: View {
 
 Each package exposes a simple `register(routes:)` entry point so it never needs to import another package’s views.
 
+In PackageA:
+
 ```swift
 import SwiftUI
 import SwiftUIRoutes
 
 public func register(routes: Routes) {
-    routes.register(type: Value.self) { value in
-        PackageBView(value: value)
-    }
-
-    routes.register(path: "/package-b/value") { route in
-        PackageBView(value: Value(systemImage: route.params["systemName"] ?? "heart.fill"))
+    routes.register(path: "/a/:id") { url in
+        Text(url.params["text"])
     }
 }
 ```
 
-This keeps navigation declarative and avoids mutual dependencies between packages because the shared `Routes` instance lives in the root target while features register themselves.*** End Patch
+In PackageB:
+
+```swift
+import SwiftUI
+import SwiftUIRoutes
+
+public func register(routes: Routes) {
+    routes.register(path: "/b/:id") { url in
+        Image(systemName: url.params["systemName"] ?? "heart.fill")
+    }
+}
+```
+
+This keeps navigation declarative and avoids mutual dependencies between packages because the shared `Routes` instance lives in the root target while features register themselves.
