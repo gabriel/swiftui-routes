@@ -2,24 +2,19 @@ import SwiftUI
 import SwiftUIRoutes
 
 @main
-struct MusicApp: App {
-    private let routes: Routes
+struct MusicApp: App {    
     @State private var path = RoutePath()
     @State private var sheet: Routable?
 
-    init() {
-        let routes = Routes()
-        Self.register(routes)
-        self.routes = routes
-    }
+    init() {}
 
     var body: some Scene {
         WindowGroup {
             NavigationStack(path: $path) {
                 AlbumListView()
                     .routesDestination(routes: routes, path: $path)
-                    .routesSheet(routes: routes, item: $sheet, path: $path)
             }
+            .routeSheet(routes: routes, item: $sheet)
             .onOpenURL(perform: handleDeepLink(_:))
         }
     }
@@ -36,24 +31,10 @@ struct MusicApp: App {
         path = RoutePath()
         path.push(route)
     }
-
-    private static func register(_ routes: Routes) {
-        routes.register(path: "/album/:id") { route in
-            if let id = route.param("id"), let album = AlbumStore.album(withID: id) {
-                AlbumDetailView(album: album)
-            } else {
-                AlbumUnavailableView(missingID: route.param("id") ?? route.path)
-            }
-        }
-
-        routes.register(type: Album.self) { album in
-            AlbumDetailView(album: album)
-        }
-    }
 }
 
-private struct AlbumUnavailableView: View {
-    let missingID: String
+struct AlbumUnavailableView: View {
+    let id: String
 
     var body: some View {
         VStack(spacing: 16) {
@@ -62,7 +43,7 @@ private struct AlbumUnavailableView: View {
                 .foregroundStyle(.orange)
             Text("Album not found")
                 .font(.headline)
-            Text("We couldn't find an album with id \(missingID).")
+            Text("We couldn't find an album with id \(id).")
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
         }
