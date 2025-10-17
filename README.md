@@ -32,6 +32,7 @@ private func register(routes: Routes) {
         AlbumDetailView(album: album)
     }
 }
+```
 
 - Path registrations use URL-style patterns. The closure receives a `Route` so you can pull out parameters or query items with `route.param(_:)` or `route.params`.
 - Type registrations work with any `Routable`. Conforming types define how to turn a value into the resource path that should be presented.
