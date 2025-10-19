@@ -6,6 +6,29 @@ SwiftUI Routes centralizes navigation destinations so you can describe navigatio
 
 Explore `Examples/MusicApp` for a complete sample integrating SwiftUI Routes; open `Examples/MusicApp/MusicApp.xcodeproj` in Xcode to run it.
 
+## Requirements
+
+- iOS 17.0+ / macOS 15.0+
+- Swift 6.0+
+
+## Installation
+
+### Swift Package Manager
+
+Add the dependency to your `Package.swift`:
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/gabriel/swiftui-routes", from: "0.2.1")
+]
+
+.target(
+    dependencies: [
+        .product(name: "SwiftUIRoutes", package: "swiftui-routes"),
+    ]
+)
+```
+
 ## Register
 
 Start by creating a `Routes.swift` file and registering destinations. Registrations accept either a resource path (string) or a `Routable` value. Paths can be parameterized to include params (like `id`).
@@ -89,7 +112,7 @@ struct HomeView: View {
     @Environment(\.routePath) private var path
 
     var body: some View {
-        VStack(spacing: 24) {
+        VStack {
             Button("Album (123)") {
                 path.push("/album/123")
             }
@@ -118,7 +141,7 @@ struct HomeView: View {
     let album: Album
 
     var body: some View {
-        VStack(spacing: 24) {
+        VStack {
             Button("Open Album") {
                 sheet = album
             }
@@ -127,29 +150,6 @@ struct HomeView: View {
         .routeSheet(routes: routes, item: $sheet, stacked: true) 
     }
 }
-```
-
-## Requirements
-
-- iOS 17.0+ / macOS 15.0+
-- Swift 6.0+
-
-## Installation
-
-### Swift Package Manager
-
-Add the dependency to your `Package.swift`:
-
-```swift
-dependencies: [
-    .package(url: "https://github.com/gabriel/swiftui-routes", from: "0.2.1")
-]
-
-.target(
-    dependencies: [
-        .product(name: "SwiftUIRoutes", package: "swiftui-routes"),
-    ]
-)
 ```
 
 ## Multiple packages
