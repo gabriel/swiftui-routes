@@ -14,6 +14,52 @@ public enum RouteButtonType {
 public enum RouteButtonStyle {
     case plain
     case `default`
+    case bordered
+    case borderedProminent
+    case glass // Fallback to bordered for older versions
+    case glassProminent // Fallback to borderedProminent for older versions
+}
+
+private struct RouteButtonStyleModifier: ViewModifier {
+    let style: RouteButtonStyle
+
+    func body(content: Content) -> some View {
+        switch style {
+        case .plain:
+            content
+                .buttonStyle(.plain)
+        case .default:
+            content
+        case .bordered:
+            content
+                .buttonStyle(.bordered)
+        case .borderedProminent:
+            content
+                .buttonStyle(.borderedProminent)
+        case .glass:
+            if #available(iOS 26.0, *) {
+                content
+                    .buttonStyle(.glass)
+            } else {
+                content
+                    .buttonStyle(.bordered)
+            }
+        case .glassProminent:
+            if #available(iOS 26.0, *) {
+                content
+                    .buttonStyle(.glassProminent)
+            } else {
+                content
+                    .buttonStyle(.borderedProminent)
+            }
+        }
+    }
+}
+
+public extension View {
+    func routeButtonStyle(_ style: RouteButtonStyle) -> some View {
+        modifier(RouteButtonStyleModifier(style: style))
+    }
 }
 
 private struct RouteModifier: ViewModifier {
@@ -24,28 +70,17 @@ private struct RouteModifier: ViewModifier {
     var completion: (() -> Void)? = nil
 
     func body(content: Content) -> some View {
-        // Copied
         switch style {
         case let .button(style):
-            switch style {
-            case .plain:
-                Button {
-                    routePath.push(routable)
-                    completion?()
-                } label: {
-                    content
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-            case .default:
-                Button {
-                    routePath.push(routable)
-                    completion?()
-                } label: {
-                    content
-                        .contentShape(Rectangle())
-                }
+            Button {
+                routePath.push(routable)
+                completion?()
+            } label: {
+                content
+                    .contentShape(Rectangle())
             }
+            .routeButtonStyle(style)
+
         case .tap:
             content
                 .contentShape(Rectangle())
