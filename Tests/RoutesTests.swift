@@ -6,7 +6,7 @@ import Testing
 
 @MainActor
 @Suite(.snapshots(record: .failed))
-struct SwiftUIRoutesTests {
+struct RoutesTests {
     @Test
     func testRouteValue() throws {
         struct SomeValue: Routable {

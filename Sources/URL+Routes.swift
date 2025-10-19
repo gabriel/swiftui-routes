@@ -35,8 +35,22 @@ extension URL {
     }
 
     var normalizedPath: String {
-        // TODO: Handle if host is the path
-        path.isEmpty ? "/" : path
+        // If there's a host but the path is empty or doesn't match HTTP(S) patterns,
+        // treat the host as part of the path
+        if let host = host, !host.isEmpty {
+            // Check if this is a standard HTTP(S) URL or has a real domain structure
+            if scheme == nil || (scheme != "http" && scheme != "https" && !host.contains(".")) {
+                // Custom scheme without proper domain - include host in path
+                if path.isEmpty {
+                    return "/\(host)"
+                } else {
+                    return "/\(host)\(path)"
+                }
+            }
+        }
+        
+        // Standard case - just use the path
+        return path.isEmpty ? "/" : path
     }
 
     var params: [String: String] {
