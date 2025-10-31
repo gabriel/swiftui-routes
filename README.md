@@ -76,12 +76,7 @@ Attach your routes to a `NavigationStack` by keeping a `RoutePath` binding. The 
 
 ```swift
 struct AppScene: View {
-    private let routes = Routes()
     @State private var path = RoutePath()
-
-    init() {
-        register(routes: routes)
-    }
 
     var body: some View {
         NavigationStack(path: $path) {
