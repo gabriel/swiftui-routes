@@ -1,6 +1,6 @@
 # 🧭 SwiftUI Routes
 
-SwiftUI Routes centralizes navigation destinations so you can describe navigation by path strings or strongly typed values.
+SwiftUI Routes is a simple library that is minimal and flexible to register routes and navigate to them.
 
 ## ✨ Features
 
