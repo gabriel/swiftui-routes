@@ -1,8 +1,17 @@
-# SwiftUI Routes
+# 🧭 SwiftUI Routes
 
 SwiftUI Routes centralizes navigation destinations so you can describe navigation by path strings or strongly typed values.
 
-## Register
+## ✨ Features
+
+- 🎯 **Flexible Navigation**: Works seamlessly with custom navigation frameworks or presenters, or Apple's `NavigationStack` and sheets
+- 🎨 **Simple & Declarative**: Centralized route registration with minimal boilerplate
+- 🔒 **Type-Safe Routing**: Navigate using strings (`"/album/123"`) or strongly-typed values (`Album(id: "123")`)
+- 📦 **Multi-Package Support**: Share a single `Routes` instance across packages without circular dependencies
+- 🔗 **Deep Linking Ready**: Built-in URL parsing and route matching for deep link handling
+- 📈 **Scalable Architecture**: Clean separation of concerns that grows with your project
+
+## 📝 Register
 
 Start by creating a `Routes.swift` file and registering destinations. Registrations accept either a resource path (string) or a `Routable` value. Paths can be parameterized to include params (like `id`).
 
@@ -30,8 +39,8 @@ private func register(routes: Routes) {
 }
 ```
 
-- Path registrations use URL-style patterns. The closure receives a `Route` so you can pull out parameters or query items with `route.param(_:)` or `route.params`.
-- Type registrations work with any `Routable`. Conforming types define how to turn a value into the resource path that should be presented.
+- 🛤️ Path registrations use URL-style patterns. The closure receives a `Route` so you can pull out parameters or query items with `route.param(_:)` or `route.params`.
+- 🏷️ Type registrations work with any `Routable`. Conforming types define how to turn a value into the resource path that should be presented.
 
 ```swift
 struct Album: Routable {
@@ -41,16 +50,16 @@ struct Album: Routable {
 }
 ```
 
-## Example Project
+## 🎵 Example Project
 
 Explore `Examples/MusicApp` for a complete sample integrating SwiftUI Routes; open `Examples/MusicApp/MusicApp.xcodeproj` in Xcode to run it.
 
-## Requirements
+## 📱 Requirements
 
 - iOS 17.0+ / macOS 15.0+
 - Swift 6.0+
 
-## Installation
+## 📦 Installation
 
 ### Swift Package Manager
 
@@ -66,7 +75,7 @@ dependencies: [
 )
 ```
 
-## NavigationStack
+## 🚀 NavigationStack
 
 Attach your routes to a `NavigationStack` by keeping a `RoutePath` binding. The modifier installs every registered destination and exposes the binding through `EnvironmentValues.routePath`. Define `routesDestination` on the root view.
 
@@ -113,7 +122,7 @@ struct HomeView: View {
 
 The `push(_:style:)` modifier wraps any view in a navigation trigger while still using the same registrations.
 
-## Deep Linking
+## 🔗 Deep Linking
 
 Handle deep links by converting incoming URLs to routes and pushing them onto the navigation path. Use `onOpenURL(perform:)` and create a `Route` from the URL:
 
@@ -157,11 +166,11 @@ struct AppScene: App {
 
 The `Route(url:)` initializer extracts the path and query parameters from the URL, matching them against your registered patterns:
 
-- `myapp://album/123` → matches `/album/:id` with `id=123`
-- `myapp://album/123?presentation=sheet` → same route but presented as a sheet via the `presentation` parameter
-- `myapp://album/featured?lang=en` → matches `/album/:id` with `id=featured` and query param `lang=en`
+- 🎵 `myapp://album/123` → matches `/album/:id` with `id=123`
+- 📄 `myapp://album/123?presentation=sheet` → same route but presented as a sheet via the `presentation` parameter
+- 🌐 `myapp://album/featured?lang=en` → matches `/album/:id` with `id=featured` and query param `lang=en`
 
-## View from a Route
+## 👁️ View from a Route
 
 Use `Routes.view(_:)` to render a destination directly from a registered path or type, if you don't want to use NavigationStack or have a custom setup.
 
@@ -176,7 +185,7 @@ struct LookupExample: View {
 }
 ```
 
-## Sheets
+## 📄 Sheets
 
 Define a sheet binding and use `routeSheet`. If `stacked` is `true`, it will wrap the route view in another NavigationStack in case those views push.
 
@@ -198,7 +207,7 @@ struct HomeView: View {
 }
 ```
 
-## Multiple packages
+## 📦 Multiple packages
 
 Share a single `Routes` instance across packages without creating cyclical dependencies by letting each package contribute its own registrations. The app owns the `Routes` instance and passes it to package-level helpers that fill in the routes it knows about.
 
