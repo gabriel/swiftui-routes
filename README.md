@@ -171,7 +171,7 @@ struct MyRouteViews: View {
 
 ## 📄 Sheets
 
-Define a sheet binding and use `routeSheet`. If `stacked` is `true`, it will wrap the route view in another NavigationStack in case those views push.
+Define a sheet binding and use `routeSheet`. If `stacked` is `true`, it will wrap the route view in another NavigationStack in case those views also push or pop.
 
 ```swift
 struct HomeView: View {
@@ -191,9 +191,9 @@ struct HomeView: View {
 }
 ```
 
-## 📦 Multiple packages
+## 📦 Multiple Packages
 
-Share a single `Routes` instance across packages without creating cyclical dependencies by letting each package contribute its own registrations. The app owns the `Routes` instance and passes it to package-level helpers that fill in the routes it knows about.
+Share a single `Routes` instance across packages without creating cyclical dependencies by letting each package contribute its own registrations. The app owns the `Routes` instance and passes it to package-level helpers that fill in the routes it knows about. Create a `public func register(routes: Routes)` method in each package.
 
 ```swift
 import PackageA
