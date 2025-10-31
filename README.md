@@ -2,33 +2,6 @@
 
 SwiftUI Routes centralizes navigation destinations so you can describe navigation by path strings or strongly typed values.
 
-## Example Project
-
-Explore `Examples/MusicApp` for a complete sample integrating SwiftUI Routes; open `Examples/MusicApp/MusicApp.xcodeproj` in Xcode to run it.
-
-## Requirements
-
-- iOS 17.0+ / macOS 15.0+
-- Swift 6.0+
-
-## Installation
-
-### Swift Package Manager
-
-Add the dependency to your `Package.swift`:
-
-```swift
-dependencies: [
-    .package(url: "https://github.com/gabriel/swiftui-routes", from: "0.2.1")
-]
-
-.target(
-    dependencies: [
-        .product(name: "SwiftUIRoutes", package: "swiftui-routes"),
-    ]
-)
-```
-
 ## Register
 
 Start by creating a `Routes.swift` file and registering destinations. Registrations accept either a resource path (string) or a `Routable` value. Paths can be parameterized to include params (like `id`).
@@ -68,19 +41,29 @@ struct Album: Routable {
 }
 ```
 
-## Lookup
+## Example Project
 
-Use `Routes.view(_:)` to render a destination directly from a registered path or type.
+Explore `Examples/MusicApp` for a complete sample integrating SwiftUI Routes; open `Examples/MusicApp/MusicApp.xcodeproj` in Xcode to run it.
+
+## Requirements
+
+- iOS 17.0+ / macOS 15.0+
+- Swift 6.0+
+
+## Installation
+
+### Swift Package Manager
 
 ```swift
-struct LookupExample: View {
-    var body: some View {
-        VStack(spacing: 16) {
-            routes.view("/album/123")
-            routes.view(Album(id: "featured"))
-        }
-    }
-}
+dependencies: [
+    .package(url: "https://github.com/gabriel/swiftui-routes", from: "0.2.1")
+]
+
+.target(
+    dependencies: [
+        .product(name: "SwiftUIRoutes", package: "swiftui-routes"),
+    ]
+)
 ```
 
 ## NavigationStack
@@ -129,6 +112,69 @@ struct HomeView: View {
 ```
 
 The `push(_:style:)` modifier wraps any view in a navigation trigger while still using the same registrations.
+
+## Deep Linking
+
+Handle deep links by converting incoming URLs to routes and pushing them onto the navigation path. Use `onOpenURL(perform:)` and create a `Route` from the URL:
+
+```swift
+struct AppScene: App {
+    private let routes = Routes()
+    @State private var path = RoutePath()
+    @State private var sheet: Routable?
+
+    init() {
+        register(routes: routes)
+    }
+
+    var body: some Scene {
+        WindowGroup {
+            NavigationStack(path: $path) {
+                HomeView()
+                    .routesDestination(routes: routes, path: $path)
+            }
+            .routeSheet(routes: routes, item: $sheet)
+            .onOpenURL(perform: handleDeepLink(_:))
+        }
+    }
+
+    private func handleDeepLink(_ url: URL) {
+        let route = Route(url: url)
+
+        // Check for sheet presentation parameter
+        if route.param("presentation") == "sheet" {
+            sheet = route
+            return
+        }
+
+        // Push onto the navigation stack
+        sheet = nil
+        path = RoutePath()
+        path.push(route)
+    }
+}
+```
+
+The `Route(url:)` initializer extracts the path and query parameters from the URL, matching them against your registered patterns:
+
+- `myapp://album/123` → matches `/album/:id` with `id=123`
+- `myapp://album/123?presentation=sheet` → same route but presented as a sheet via the `presentation` parameter
+- `myapp://album/featured?lang=en` → matches `/album/:id` with `id=featured` and query param `lang=en`
+
+## View from a Route
+
+Use `Routes.view(_:)` to render a destination directly from a registered path or type, if you don't want to use NavigationStack or have a custom setup.
+
+```swift
+struct LookupExample: View {
+    var body: some View {
+        VStack(spacing: 16) {
+            routes.view("/album/123")
+            routes.view(Album(id: "featured"))
+        }
+    }
+}
+```
 
 ## Sheets
 
