@@ -7,7 +7,7 @@ SwiftUI Routes centralizes navigation destinations so you can describe navigatio
 - 🎯 **Flexible Navigation**: Works seamlessly with custom navigation frameworks or presenters, or Apple's `NavigationStack` and sheets
 - 🎨 **Simple & Declarative**: Centralized route registration with minimal boilerplate
 - 🔒 **Type-Safe Routing**: Navigate using strings (`"/album/123"`) or strongly-typed values (`Album(id: "123")`)
-- 📦 **Multi-Package Support**: Share a single `Routes` instance across packages without circular dependencies
+- 📦 **Multi-Package Support**: Register and share a single `Routes` instance across SPM packages
 - 🔗 **Deep Linking Ready**: Built-in URL parsing and route matching for deep link handling
 - 📈 **Scalable Architecture**: Clean separation of concerns that grows with your project
 
@@ -21,12 +21,6 @@ import SwiftUIRoutes
 @MainActor
 var routes: Routes {
     let routes = Routes()
-    register(routes: routes)
-    return routes
-}
-
-@MainActor
-private func register(routes: Routes) {
     routes.register(path: "/album/:id") { route in
         if let id = route.param("id") {
             AlbumView(id: id)
@@ -36,6 +30,7 @@ private func register(routes: Routes) {
     routes.register(type: Album.self) { album in
         AlbumDetailView(album: album)
     }
+    return routes
 }
 ```
 
@@ -97,7 +92,7 @@ struct AppScene: View {
 }
 ```
 
-Views inside the stack can push routes directly or use the provided view modifiers.
+Views can access the routePath from the environment (view hierarchy) and can push routes directly or use the provided view modifiers.
 
 ```swift
 struct HomeView: View {

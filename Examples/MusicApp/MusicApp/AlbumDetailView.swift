@@ -77,7 +77,7 @@ struct AlbumDetailView: View {
                 }
             }
         }
-        .routeSheetStack(routes: routes, item: $sheet)
+        .routeSheet(routes: routes, item: $sheet, stacked: true)
     }
 }
 
