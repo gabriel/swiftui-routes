@@ -118,13 +118,8 @@ Handle deep links by converting incoming URLs to routes and pushing them onto th
 
 ```swift
 struct AppScene: App {
-    private let routes = Routes()
     @State private var path = RoutePath()
     @State private var sheet: Routable?
-
-    init() {
-        register(routes: routes)
-    }
 
     var body: some Scene {
         WindowGroup {
@@ -148,7 +143,6 @@ struct AppScene: App {
 
         // Push onto the navigation stack
         sheet = nil
-        path = RoutePath()
         path.push(route)
     }
 }
@@ -165,7 +159,7 @@ The `Route(url:)` initializer extracts the path and query parameters from the UR
 Use `Routes.view(_:)` to render a destination directly from a registered path or type, if you don't want to use NavigationStack or have a custom setup.
 
 ```swift
-struct LookupExample: View {
+struct MyRouteViews: View {
     var body: some View {
         VStack(spacing: 16) {
             routes.view("/album/123")
