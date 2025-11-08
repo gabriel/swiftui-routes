@@ -37,7 +37,7 @@ private struct RouteButtonStyleModifier: ViewModifier {
             content
                 .buttonStyle(.borderedProminent)
         case .glass:
-            if #available(iOS 26.0, *) {
+            if #available(iOS 26.0, macOS 26.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
                 content
                     .buttonStyle(.glass)
             } else {
@@ -45,7 +45,7 @@ private struct RouteButtonStyleModifier: ViewModifier {
                     .buttonStyle(.bordered)
             }
         case .glassProminent:
-            if #available(iOS 26.0, *) {
+            if #available(iOS 26.0, macOS 26.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
                 content
                     .buttonStyle(.glassProminent)
             } else {
