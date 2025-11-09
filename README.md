@@ -70,50 +70,9 @@ dependencies: [
 )
 ```
 
-## 🚀 NavigationStack
-
-Attach your routes to a `NavigationStack` by keeping a `RoutePath` binding. The modifier installs every registered destination and exposes the binding through `EnvironmentValues.routePath`. Define `routesDestination` on the root view.
-
-```swift
-struct AppScene: View {
-    @State private var path = RoutePath()
-
-    var body: some View {
-        NavigationStack(path: $path) {
-            HomeView()
-                .routesDestination(routes: routes, path: $path)
-        }
-    }    
-}
-```
-
-Views can access the routePath from the environment (view hierarchy) and can push routes directly or use the provided view modifiers.
-
-```swift
-struct HomeView: View {
-    @Environment(\.routePath) private var path
-
-    var body: some View {
-        VStack {
-            Button("Album (123)") {
-                path.push("/album/123")
-            }
-
-            Button("Featured Album") {
-                path.push(Album(id: "featured"))
-            }
-
-            Text("Tap to open Latest")
-                .push(Album(id: "123"), style: .tap)
-        }
-    }
-}
-```
-
-The `push(_:style:)` modifier wraps any view in a navigation trigger while still using the same registrations.
-
 ## 🔗 Deep Linking
 
+All the routes that are defined by URL paths, can be used to support deep linking.
 Handle deep links by converting incoming URLs to routes and pushing them onto the navigation path. Use `onOpenURL(perform:)` and create a `Route` from the URL:
 
 ```swift
@@ -158,6 +117,8 @@ The `Route(url:)` initializer extracts the path and query parameters from the UR
 
 Use `Routes.view(_:)` to render a destination directly from a registered path or type, if you don't want to use NavigationStack or have a custom setup.
 
+*This is another way of saying, when routes are defined you can use them anywhere, including your own app.*
+
 ```swift
 struct MyRouteViews: View {
     var body: some View {
@@ -169,7 +130,53 @@ struct MyRouteViews: View {
 }
 ```
 
+## 🚀 NavigationStack
+
+**Using View helpers and Environment values are optional and might not be useful in your projects.**
+
+You can attach your routes to a `NavigationStack` by keeping a `RoutePath` binding. The modifier installs every registered destination and exposes the binding through `EnvironmentValues.routePath`. Define `routesDestination` on the root view.
+
+```swift
+struct AppScene: View {
+    @State private var path = RoutePath()
+
+    var body: some View {
+        NavigationStack(path: $path) {
+            HomeView()
+                .routesDestination(routes: routes, path: $path)
+        }
+    }    
+}
+```
+
+Views can access the routePath from the environment (view hierarchy) and can push routes directly or use the provided view modifiers.
+
+```swift
+struct HomeView: View {
+    @Environment(\.routePath) private var path
+
+    var body: some View {
+        VStack {
+            Button("Album (123)") {
+                path.push("/album/123")
+            }
+
+            Button("Featured Album") {
+                path.push(Album(id: "featured"))
+            }
+
+            Text("Tap to open Latest")
+                .push(Album(id: "123"), style: .tap)
+        }
+    }
+}
+```
+
+The `push(_:style:)` modifier wraps any view in a navigation trigger while still using the same registrations.
+
 ## 📄 Sheets
+
+**Using View helpers and Environment values are optional and might not be useful in your projects.**
 
 Define a sheet binding and use `routeSheet`. If `stacked` is `true`, it will wrap the route view in another NavigationStack in case those views also push or pop.
 
