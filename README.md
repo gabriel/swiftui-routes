@@ -1,6 +1,6 @@
 # 🧭 SwiftUI Routes
 
-SwiftUI Routes is a simple library that is minimal and flexible to register routes and navigate to them.
+SwiftUI Routes is a library to register routes using values or URLs and optional helpers to navigate to them using SwiftUI.
 
 ## ✨ Features
 
